@@ -1,8 +1,7 @@
 import { listGroups } from "@/lib/access";
 import { listPlans } from "@/lib/plans";
 import { requireAdmin } from "@/lib/session";
-import { deletePlanAction } from "./actions";
-import { PlanForm } from "./plan-form";
+import { DeletePlanForm, PlanForm } from "./plan-form";
 
 export const metadata = { title: "Plans · Admin" };
 
@@ -33,14 +32,7 @@ export default async function PlansPage() {
             </summary>
             <div className="mt-4 flex flex-col gap-6">
               <PlanForm plan={plan} groups={groups} />
-              <form action={deletePlanAction} className="flex flex-wrap items-center gap-3 text-sm">
-                <input type="hidden" name="id" value={plan.id} />
-                <label className="flex items-center gap-2">
-                  <input type="checkbox" name="confirm" value="yes" required />
-                  Delete &ldquo;{plan.name}&rdquo;
-                </label>
-                <button className="rounded-md bg-red-700 px-3 py-1.5 font-medium text-white">Delete plan</button>
-              </form>
+              <DeletePlanForm plan={plan} />
             </div>
           </details>
         ))}

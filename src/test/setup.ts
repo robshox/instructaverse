@@ -7,3 +7,5 @@ process.env.DATA_DIR = mkdtempSync(join(tmpdir(), "instructaverse-test-"));
 // Vite/Vitest pre-sets BASE_URL to "/" (its asset base), so assign rather than default.
 process.env.BASE_URL = "http://localhost:3000";
 process.env.AUTH_SECRET ??= "test-secret-test-secret-test-secret-123";
+process.env.STRIPE_SECRET_KEY = "sk_test_dummy";
+process.env.STRIPE_WEBHOOK_SECRET = "whsec_test_secret";

@@ -20,6 +20,8 @@ export const user = sqliteTable("user", {
   emailVerified: integer("email_verified", { mode: "boolean" }).notNull().default(false),
   image: text("image"),
   role: text("role", { enum: ["admin", "member"] }).notNull().default("member"),
+  /** Set by the first Stripe checkout (or migration). Not managed by Better Auth. */
+  stripeCustomerId: text("stripe_customer_id").unique(),
   ...timestamps,
 });
 

@@ -3,7 +3,7 @@
 import { useActionState } from "react";
 import { Field, FormMessage, inputClass, SubmitButton } from "@/components/form";
 import type { Plan } from "@/lib/plans";
-import { savePlanAction, type PlanFormState } from "./actions";
+import { deletePlanAction, savePlanAction, type PlanFormState } from "./actions";
 
 type Group = { id: string; name: string };
 
@@ -74,6 +74,25 @@ export function PlanForm({ plan, groups }: { plan?: Plan; groups: Group[] }) {
       <SubmitButton pending={pending} pendingText="Saving…">
         {plan ? "Save plan" : "Create plan"}
       </SubmitButton>
+    </form>
+  );
+}
+
+export function DeletePlanForm({ plan }: { plan: Pick<Plan, "id" | "name"> }) {
+  const [state, action, pending] = useActionState<PlanFormState, FormData>(deletePlanAction, {});
+  return (
+    <form action={action} className="flex flex-col gap-2 text-sm">
+      <input type="hidden" name="id" value={plan.id} />
+      <div className="flex flex-wrap items-center gap-3">
+        <label className="flex items-center gap-2">
+          <input type="checkbox" name="confirm" value="yes" required />
+          Delete &ldquo;{plan.name}&rdquo;
+        </label>
+        <button disabled={pending} className="rounded-md bg-red-700 px-3 py-1.5 font-medium text-white disabled:opacity-60">
+          Delete plan
+        </button>
+      </div>
+      {state.error ? <FormMessage error={state.error} /> : null}
     </form>
   );
 }

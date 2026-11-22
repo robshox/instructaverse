@@ -1,9 +1,17 @@
 import { and, asc, eq, inArray, ne } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
-import { planGroups, planPrices, plans } from "@/db/schema";
+import { planGroups, planPrices, plans, purchases } from "@/db/schema";
 
 export class PlanInputError extends Error {}
+
+/** Thrown when deleting a plan that members have bought. Unlist it instead. */
+export class PlanInUseError extends Error {
+  constructor() {
+    super("Members have bought this plan, so it can't be deleted. Unlist it to hide it from the pricing page.");
+    this.name = "PlanInUseError";
+  }
+}
 
 const planInput = z.object({
   name: z.string().trim().min(1, "Enter a plan name"),
@@ -84,6 +92,7 @@ export async function updatePlan(id: string, input: PlanInput): Promise<void> {
 }
 
 export async function deletePlan(id: string): Promise<void> {
+  if ((await db.$count(purchases, eq(purchases.planId, id))) > 0) throw new PlanInUseError();
   await db.delete(plans).where(eq(plans.id, id));
 }
 

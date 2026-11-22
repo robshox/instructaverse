@@ -1,7 +1,7 @@
 "use server";
 
 import { refresh } from "next/cache";
-import { createPlan, deletePlan, PlanInputError, updatePlan, type PlanInput } from "@/lib/plans";
+import { createPlan, deletePlan, PlanInputError, PlanInUseError, updatePlan, type PlanInput } from "@/lib/plans";
 import { requireAdmin } from "@/lib/session";
 
 export type PlanFormState = { error?: string; ok?: number };
@@ -33,9 +33,15 @@ export async function savePlanAction(_prev: PlanFormState, formData: FormData): 
   return { ok: Date.now() };
 }
 
-export async function deletePlanAction(formData: FormData): Promise<void> {
+export async function deletePlanAction(_prev: PlanFormState, formData: FormData): Promise<PlanFormState> {
   await requireAdmin();
-  if (formData.get("confirm") !== "yes") return;
-  await deletePlan(String(formData.get("id")));
+  if (formData.get("confirm") !== "yes") return {};
+  try {
+    await deletePlan(String(formData.get("id")));
+  } catch (e) {
+    if (e instanceof PlanInUseError) return { error: e.message };
+    throw e;
+  }
   refresh();
+  return { ok: Date.now() };
 }
