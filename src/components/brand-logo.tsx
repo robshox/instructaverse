@@ -1,17 +1,14 @@
 import Link from "next/link";
 import { connection } from "next/server";
 import { Suspense } from "react";
+import { LogoImage } from "@/components/logo-image";
 import { getBrand } from "@/lib/brand";
 
 /** The community logo, read from runtime brand settings (so one image serves any community). */
 async function Logo() {
   await connection();
   const brand = getBrand();
-  return (
-    // External, admin-configured URL; next/image would need every possible host allow-listed.
-    // eslint-disable-next-line @next/next/no-img-element
-    <img src={brand.logoUrl} alt={brand.name} className="block h-[22px] w-auto max-w-[180px]" />
-  );
+  return <LogoImage src={brand.logoUrl} name={brand.name} />;
 }
 
 export function BrandLogo({ href = "/" }: { href?: string }) {
