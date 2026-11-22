@@ -29,7 +29,7 @@ async function Board({ params }: Pick<PageProps<"/board/[boardId]">, "params">) 
   const board = await getBoard(boardId);
   if (!board) notFound();
   if (!(await canAccess(viewer, board.groupIds))) {
-    return <NoAccess title={board.name} plans={await plansGranting(board.groupIds)} signedIn />;
+    return <NoAccess title={board.name} plans={await plansGranting(board.groupIds)} signedIn kind="Board" />;
   }
   const [posts, boards] = await Promise.all([listPosts(board.id), boardsWithCounts(viewer)]);
   const comments = await listComments(posts.map((p) => p.id));
