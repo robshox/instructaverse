@@ -71,6 +71,13 @@
       "when": 1795349474723,
       "tag": "0009_likes",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1795349638427,
+      "tag": "0010_events",
+      "breakpoints": true
     }
   ]
 }

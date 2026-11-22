@@ -11,6 +11,9 @@ export default function MemberLayout({ children }: { children: ReactNode }) {
         <Link href="/board" className="underline-offset-4 hover:underline">
           Board
         </Link>
+        <Link href="/events" className="underline-offset-4 hover:underline">
+          Events
+        </Link>
         <Link href="/account" className="ml-auto underline-offset-4 hover:underline">
           Account
         </Link>
