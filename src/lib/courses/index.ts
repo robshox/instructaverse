@@ -90,7 +90,7 @@ export async function getCourseOutline(courseId: string) {
   const mods = await db.select().from(modules).where(eq(modules.courseId, courseId)).orderBy(asc(modules.position));
   const ls = mods.length
     ? await db
-        .select({ id: lessons.id, moduleId: lessons.moduleId, title: lessons.title, position: lessons.position })
+        .select({ id: lessons.id, moduleId: lessons.moduleId, title: lessons.title, position: lessons.position, muxStatus: lessons.muxStatus })
         .from(lessons)
         .where(inArray(lessons.moduleId, mods.map((m) => m.id)))
         .orderBy(asc(lessons.position))

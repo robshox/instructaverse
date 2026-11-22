@@ -34,11 +34,15 @@ export function PromptField({ label, button, ...input }: { label: string; button
   );
 }
 
-export function SubmitButton({ pending, children, pendingText }: { pending: boolean; children: string; pendingText: string }) {
+export function SubmitButton({ pending, children, pendingText, size = "md" }: { pending: boolean; children: string; pendingText: string; size?: "md" | "sm" }) {
   return (
     <button
       disabled={pending}
-      className="inline-flex items-center justify-center gap-2 rounded-full bg-accent px-[18px] py-[9px] text-sm font-medium text-on-accent transition-colors hover:bg-accent-hover disabled:opacity-60"
+      className={`inline-flex items-center justify-center gap-2 rounded-full font-medium whitespace-nowrap transition-colors disabled:opacity-60 ${
+        size === "sm"
+          ? "border border-line-strong px-3.5 py-1.5 text-[13px] text-fg hover:border-muted"
+          : "bg-accent px-[18px] py-[9px] text-sm text-on-accent hover:bg-accent-hover"
+      }`}
     >
       {pending ? pendingText : children}
     </button>

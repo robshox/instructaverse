@@ -71,24 +71,29 @@ export function SortableList({
               key={id}
               draggable
               onDragStart={(e) => {
+                e.stopPropagation(); // nested lists: only the innermost item drags
                 setDragging(id);
                 e.dataTransfer.effectAllowed = "move";
                 e.dataTransfer.setData("text/plain", id);
               }}
               onDragOver={(e) => {
-                if (!dragging) return;
+                if (!dragging) return; // not ours: let an outer list handle it
                 e.preventDefault();
+                e.stopPropagation();
                 e.dataTransfer.dropEffect = "move";
                 setOver(id);
               }}
               onDragLeave={() => setOver((o) => (o === id ? null : o))}
               onDrop={(e) => {
+                if (!dragging) return;
                 e.preventDefault();
+                e.stopPropagation();
                 if (dragging && dragging !== id) move(dragging, visible.indexOf(id));
                 setDragging(null);
                 setOver(null);
               }}
-              onDragEnd={() => {
+              onDragEnd={(e) => {
+                e.stopPropagation();
                 setDragging(null);
                 setOver(null);
               }}

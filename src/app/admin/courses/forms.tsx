@@ -16,20 +16,24 @@ export function EditorForm({
   submit,
   resetOnSuccess,
   className = "flex flex-col gap-4",
+  size,
 }: {
   action: Action;
   children: React.ReactNode;
   submit: string;
   resetOnSuccess?: boolean;
   className?: string;
+  size?: "md" | "sm";
 }) {
   const [state, formAction, pending] = useActionState<EditorState, FormData>(action, {});
   return (
     <form action={formAction} key={resetOnSuccess ? state.ok : undefined} className={className}>
       {children}
-      <SubmitButton pending={pending} pendingText="Saving…">
-        {submit}
-      </SubmitButton>
+      <span className="shrink-0">
+        <SubmitButton pending={pending} pendingText="Saving…" size={size}>
+          {submit}
+        </SubmitButton>
+      </span>
       <FormMessage error={state.error} success={!resetOnSuccess && state.ok ? "Saved." : undefined} />
     </form>
   );
