@@ -14,7 +14,7 @@ Run in auto mode (see `auto.md`). Evidence comes from the test suite, the standa
 ## Automated checks
 | Check | Command | Result |
 | --- | --- | --- |
-| Tests | `npx vitest run` | 191 passed in 40 files (152 tests before the redesign, all still passing) |
+| Tests | `npx vitest run` | 192 passed in 40 files after the review loop-back (152 tests before the redesign, all still passing) |
 | Type-check | `npm run typecheck` (`next typegen && tsc --noEmit`) | clean |
 | Lint | `npm run lint` | clean |
 | Build | `npm run build` | compiled successfully |
@@ -57,7 +57,7 @@ Run in auto mode (see `auto.md`). Evidence comes from the test suite, the standa
 | AC-31 | pass | `listing.test.ts`; `admin-guards.test.ts` (non-admin refused, plan unchanged). Browser: both switches off showed "Membership isn't open right now" on /pricing; Lifetime on showed only Lifetime; both on showed both |
 | AC-32 | pass | `usage.test.ts`. Browser: Pro members "1 course · 1 board · 2 events", granted by "Lifetime, Monthly"; Founders "1 course", granted by Lifetime |
 | AC-33 | pass | Browser per screen: course create, details save, add/rename/delete module and lesson, lesson save and attach, plan edit and save, group create/rename/delete, board create/edit/delete, event edit and save. Existing action tests still green |
-| AC-34 | pass | 191 tests green (152 existing plus new tests for every new function); lint, typecheck and build clean |
+| AC-34 | pass | 192 tests green (152 existing plus new tests for every new function); lint, typecheck and build clean |
 
 ## Edge cases & error states tried
 - A member with no courses: greeting plus an empty state with See plans; no totals, Continue or sidebar panels.
@@ -72,6 +72,12 @@ Run in auto mode (see `auto.md`). Evidence comes from the test suite, the standa
 ## Failures found and fixed (cause → fix → regression test)
 - **Broken logo showed an icon, not the name.** Cause: a plain `<img>` with alt text, so browsers draw the broken-image glyph. Fix: the `LogoImage` client component swaps to the name on `error`, including errors before hydration (f38fada). Guard: browser check on a throwaway instance with `BRAND_LOGO_URL=http://localhost:9/missing-logo.png` shows "Acme Academy" as text; the demo logo still loads. There's no unit test, because the project has no DOM test environment.
 - **Not a product bug, recorded for honesty:** my first sweep ran against the demo server after a rebuild without a restart. Its old pages pointed at stylesheets the rebuild had replaced, so everything rendered unstyled. Restarting fixed it. Standalone deploys restart on release, so this only affects local hot rebuilds.
+
+## Re-verification after review (loop-back 1, 0ee82fd)
+- **Course editor menus (AC-33):** with the last module's ⋯ open, the menu now extends past the card (popover bottom 1068 px, card no longer clips it), `elementFromPoint` on Delete module hits the button, and the card's scrollTop stays 0. Screenshot checked.
+- **Handle-only drag (AC-28):** lesson drag and module drag from the grip handles both saved after reload, and the order was restored afterwards. A drag started from the add-lesson text input moved nothing. Board drag from the handle saved (temporary board, then deleted).
+- **Account price (AC-22):** `memberPriceId` returns the price only for single-price plans (`copy.test.ts`). The price itself still needs real Stripe keys to see.
+- Full suite 192 green; typecheck and lint clean; build clean.
 
 ## Not verified (and why)
 - Stripe prices on pricing, no-access and account, the Manage billing portal, and the real checkout webhook to the ready state (AC-22, AC-23, AC-25, AC-26): placeholder Stripe keys. Already deferred as SWI-230 (Stripe test mode).

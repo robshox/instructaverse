@@ -41,6 +41,8 @@ Earlier in the terminal, Rob approved the Doop redesign ("You did a good job I h
 | 7 | mt-build phase 4 | Checkpoint 4 passed: SWI-258–263 done (fe02a93, 30b9a85, f9bf504, b30c261, 851955c, fd913a0); 188 tests in 39 files green; lint, typecheck and build clean; Docker image builds and runs (runtime BRAND_NAME in titles, fonts served); every admin screen browser-checked including drag reorder of lessons, modules and boards. Plan done | mt-verify |
 | 8 | mt-verify | 05-verify.md: verdict partial (environment only: Stripe prices, billing portal and webhook, real Mux playback, all already deferred as SWI-230/231); 30 ACs pass, 4 partial on those gaps; one failure found and fixed (brand name as text when the logo fails, f38fada); 191 tests green | mt-review |
 | 9 | mt-review | 06-review.md: request-changes (single-context; second opinion skipped). Spec pass; Quality: 2 blockers (course editor menus clipped by an overflow-hidden card; account card may show a price the member does not pay), 2 suggestions | mt-build (loop-back 1 of 2) |
+| 10 | mt-build (loop-back 1) | SWI-273 fixed in 0ee82fd: editor menus no longer clipped; account price only for single-price plans (memberPriceId + test); drag from handle only | mt-verify |
+| 11 | mt-verify | 05-verify.md updated: re-verified menus, handle drags and price rule; verdict still partial (environment only); 192 tests green | mt-review |
 
 ## Decisions made for you
 | # | Step | Question | Chose | Why | Undo cost | By |
