@@ -1,12 +1,14 @@
 import { migrateDb } from "@/db";
+import { ensureDefaultBoard } from "@/lib/community/boards";
 import { EnvError, parseEnv } from "@/lib/env";
 
 /**
  * Runs once when the server starts, before it accepts requests:
  * 1. In production, validate configuration and exit naming any bad variable (AC-44).
  * 2. Apply pending database migrations, so a fresh volume is ready (AC-43).
+ * 3. Create the default "General" board on a fresh install (FR-5.1).
  */
-export function runStartup(): void {
+export async function runStartup(): Promise<void> {
   if (process.env.NEXT_PHASE === "phase-production-build") return;
 
   if (process.env.NODE_ENV === "production") {
@@ -20,4 +22,5 @@ export function runStartup(): void {
   }
 
   migrateDb();
+  await ensureDefaultBoard(); // FR-5.1
 }

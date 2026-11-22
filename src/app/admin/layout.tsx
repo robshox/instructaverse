@@ -10,6 +10,9 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         <Link href="/admin/courses" className="underline-offset-4 hover:underline">
           Courses
         </Link>
+        <Link href="/admin/boards" className="underline-offset-4 hover:underline">
+          Boards
+        </Link>
         <Link href="/admin/plans" className="underline-offset-4 hover:underline">
           Plans
         </Link>

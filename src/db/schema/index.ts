@@ -4,3 +4,4 @@ export * from "./plans";
 export * from "./billing";
 export * from "./courses";
 export * from "./progress";
+export * from "./community";

@@ -8,6 +8,9 @@ export default function MemberLayout({ children }: { children: ReactNode }) {
         <Link href="/courses" className="font-semibold">
           Courses
         </Link>
+        <Link href="/board" className="underline-offset-4 hover:underline">
+          Board
+        </Link>
         <Link href="/account" className="ml-auto underline-offset-4 hover:underline">
           Account
         </Link>

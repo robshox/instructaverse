@@ -1,6 +1,7 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { listBoards } from "@/lib/community/boards";
 import { runStartup } from "@/lib/startup";
 
 afterEach(() => {
@@ -9,7 +10,7 @@ afterEach(() => {
 });
 
 describe("server startup", () => {
-  it("in production, exits non-zero naming any missing variable", () => {
+  it("in production, exits non-zero naming any missing variable", async () => {
     vi.stubEnv("NODE_ENV", "production");
     vi.stubEnv("STRIPE_SECRET_KEY", "");
     const exit = vi.spyOn(process, "exit").mockImplementation(((code?: number) => {
@@ -17,23 +18,24 @@ describe("server startup", () => {
     }) as never);
     const log = vi.spyOn(console, "error").mockImplementation(() => {});
 
-    expect(() => runStartup()).toThrow("exit 1");
+    await expect(runStartup()).rejects.toThrow("exit 1");
     expect(exit).toHaveBeenCalledWith(1);
     expect(log.mock.calls.flat().join("\n")).toMatch(/STRIPE_SECRET_KEY/);
   });
 
-  it("applies database migrations so a fresh volume is ready", () => {
+  it("applies database migrations and creates the General board, safely on every start", async () => {
     vi.stubEnv("NODE_ENV", "development");
-    runStartup();
+    await runStartup();
     expect(existsSync(join(process.env.DATA_DIR!, "app.db"))).toBe(true);
-    runStartup(); // safe to run again on every start
+    await runStartup();
+    expect((await listBoards()).map((b) => b.name)).toEqual(["General"]);
   });
 
-  it("does nothing during next build", () => {
+  it("does nothing during next build", async () => {
     vi.stubEnv("NEXT_PHASE", "phase-production-build");
     vi.stubEnv("NODE_ENV", "production");
     const exit = vi.spyOn(process, "exit");
-    runStartup();
+    await runStartup();
     expect(exit).not.toHaveBeenCalled();
   });
 });
