@@ -123,3 +123,15 @@ export async function getLessonForViewer(viewer: Viewer, courseId: string, lesso
   }
   return { status: "ok", course, lesson: row.lesson };
 }
+
+/** A lesson by ID and whether this viewer may see it (for media routes). */
+export async function lessonWithAccess(viewer: Viewer, lessonId: string): Promise<{ lesson: Lesson; allowed: boolean } | null> {
+  const [row] = await db
+    .select({ lesson: lessons, courseId: modules.courseId })
+    .from(lessons)
+    .innerJoin(modules, eq(modules.id, lessons.moduleId))
+    .where(eq(lessons.id, lessonId));
+  if (!row) return null;
+  const course = await getCourse(row.courseId);
+  return { lesson: row.lesson, allowed: Boolean(course) && (await canAccess(viewer, course!.groupIds)) };
+}

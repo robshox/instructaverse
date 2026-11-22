@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import { LessonPlayer } from "@/components/lesson-player";
 import { NoAccess } from "@/components/no-access";
 import { getLessonForViewer } from "@/lib/courses";
+import { isVtt, playbackFor, vttToText } from "@/lib/mux";
 import { getViewer } from "@/lib/session";
 
 type Props = PageProps<"/courses/[courseId]/[lessonId]">;
@@ -24,6 +26,9 @@ async function Lesson({ params }: Pick<Props, "params">) {
     return <NoAccess title={result.courseTitle} plans={result.plans} signedIn={Boolean(viewer)} />;
   }
   const { course, lesson } = result;
+  const playback = await playbackFor(viewer, lesson.id);
+  const vtt = isVtt(lesson.transcript);
+  const transcriptText = vtt ? vttToText(lesson.transcript!) : lesson.transcript;
 
   return (
     <main className="flex flex-col gap-6">
@@ -31,15 +36,26 @@ async function Lesson({ params }: Pick<Props, "params">) {
         ← {course.title}
       </Link>
       <h1 className="text-2xl font-semibold">{lesson.title}</h1>
-      {/* Video player arrives in 3.2 (SWI-209). */}
+      {playback ? (
+        <LessonPlayer
+          playbackId={playback.playbackId}
+          tokens={playback.tokens}
+          title={lesson.title}
+          captionsSrc={vtt ? `/api/lessons/${lesson.id}/captions` : null}
+        />
+      ) : lesson.muxStatus === "preparing" ? (
+        <div role="status" className="flex aspect-video w-full items-center justify-center rounded-lg bg-zinc-100 text-zinc-600 dark:bg-zinc-900 dark:text-zinc-400">
+          Video processing…
+        </div>
+      ) : null}
       {lesson.bodyMd ? (
         // Plain text for now; Markdown rendering needs a dependency decision.
         <div className="whitespace-pre-wrap leading-relaxed">{lesson.bodyMd}</div>
       ) : null}
-      {lesson.transcript ? (
+      {transcriptText ? (
         <details className="rounded-md border border-zinc-200 p-4 dark:border-zinc-800">
           <summary className="cursor-pointer font-medium">Transcript</summary>
-          <div className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">{lesson.transcript}</div>
+          <div className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">{transcriptText}</div>
         </details>
       ) : null}
     </main>
