@@ -8,7 +8,7 @@ stop_after: mt-ship
 push: true
 max_fix_attempts: 3
 max_loop_backs: 2
-loop_backs: 0
+loop_backs: 1
 pr: null
 ---
 
@@ -40,6 +40,7 @@ Earlier in the terminal, Rob approved the Doop redesign ("You did a good job I h
 | 6 | mt-build phase 3 | Checkpoint 3 passed: SWI-256–257 done (ec5e070, 55d063b), 179 tests green, lint/typecheck/build clean; pricing, no-access, login (magic link via Mailpit and password), reset, setup (throwaway instance) and after-checkout browser-checked. Stripe prices and the checkout ready state need real Stripe test keys (SWI-230) | mt-build phase 4 |
 | 7 | mt-build phase 4 | Checkpoint 4 passed: SWI-258–263 done (fe02a93, 30b9a85, f9bf504, b30c261, 851955c, fd913a0); 188 tests in 39 files green; lint, typecheck and build clean; Docker image builds and runs (runtime BRAND_NAME in titles, fonts served); every admin screen browser-checked including drag reorder of lessons, modules and boards. Plan done | mt-verify |
 | 8 | mt-verify | 05-verify.md: verdict partial (environment only: Stripe prices, billing portal and webhook, real Mux playback, all already deferred as SWI-230/231); 30 ACs pass, 4 partial on those gaps; one failure found and fixed (brand name as text when the logo fails, f38fada); 191 tests green | mt-review |
+| 9 | mt-review | 06-review.md: request-changes (single-context; second opinion skipped). Spec pass; Quality: 2 blockers (course editor menus clipped by an overflow-hidden card; account card may show a price the member does not pay), 2 suggestions | mt-build (loop-back 1 of 2) |
 
 ## Decisions made for you
 | # | Step | Question | Chose | Why | Undo cost | By |
@@ -52,6 +53,7 @@ Earlier in the terminal, Rob approved the Doop redesign ("You did a good job I h
 | 18 | mt-build 2.3 | The frame shows untouched modules collapsed; how to build that? | Native `<details>` per module: open when it has a completion or holds the next lesson (all open once the course is done); the progress card says "Start course" before any completion | No JavaScript, keyboard accessible, every lesson still one click away | low | auto |
 | 19 | mt-build 2.6 | Calendar route path, and the frame's "Join link opens 15 min before" | `GET /api/events/[id]/calendar` (next to the other member API routes, the spec allowed "or similar"); Join on Zoom stays on every upcoming event as today, the 15-minute rule is not built | A timed Join gate would change existing behaviour and isn't in the spec | low | auto |
 | 20 | mt-build 4.2 | Course editor layout and the keyboard reorder path | Visibility chips stay in the Details card (the frame puts them in the sidebar) so title, description and groups still save in one form; rename and delete sit in each module's ⋯ menu; the ↑/↓ buttons send the full order to the new reorder actions instead of the old swap actions (still in the code, unused) | One save path, one reorder path, no behaviour change | low | auto |
+| 21 | mt-review | Reviewers as subagents, and a second opinion via Codex? | Ran both briefs in this session (marked single-context) and skipped the second opinion | The host spawns subagents only when the user asks (decision 3); the change is UI-only on auth and payment pages, and sending code to another provider was not in the brief | low | auto |
 | 4 | mt-discovery | Font fix | Inter Tight + IBM Plex Mono via next/font; drop the Arial override and Geist | Matches the approved style and fixes the Arial bug | low | auto |
 | 5 | mt-discovery | Hard-code Switch Dimension branding? | No: env-configurable brand (BRAND_NAME, BRAND_LOGO_URL, BRAND_TAGLINE) defaulting to Switch Dimension | The app is open source; other installs need their own brand | low | auto |
 | 6 | mt-discovery | Light mode? | Dark only | The approved style is dark; one theme is simpler | low | auto |
