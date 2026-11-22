@@ -42,6 +42,7 @@ Earlier in the terminal, Rob approved the Doop redesign ("You did a good job I h
 | 1 | mt-auto | How far should the run go? | Open a PR (stop_after: mt-ship, push: true) | The brief asks to finish with a PR link | low | auto |
 | 2 | mt-auto | Which branch and PR base? | Branch `feat/switch-dimension-redesign` off `feat/SWI-198-community-platform-v1`; PR targets that branch (stacked) | The app code the redesign restyles isn't merged to main yet; a stacked PR keeps the redesign reviewable on its own | low | auto |
 | 3 | mt-auto | Fresh subagent per step? | Run the steps in this session | This host only spawns subagents when the user explicitly asks; the docs carry state between steps, which mt-auto allows | low | auto |
+| 16 | mt-build 1.1 | Dim text colour | #808080 instead of the site's #5f5f5f | #5f5f5f is 2.8–3.1:1 on the dark surfaces; AC-4 needs 4.5:1 | low | auto |
 | 4 | mt-discovery | Font fix | Inter Tight + IBM Plex Mono via next/font; drop the Arial override and Geist | Matches the approved style and fixes the Arial bug | low | auto |
 | 5 | mt-discovery | Hard-code Switch Dimension branding? | No: env-configurable brand (BRAND_NAME, BRAND_LOGO_URL, BRAND_TAGLINE) defaulting to Switch Dimension | The app is open source; other installs need their own brand | low | auto |
 | 6 | mt-discovery | Light mode? | Dark only | The approved style is dark; one theme is simpler | low | auto |
