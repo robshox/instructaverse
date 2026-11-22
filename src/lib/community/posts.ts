@@ -1,9 +1,9 @@
-import { asc, desc, eq, inArray } from "drizzle-orm";
+import { asc, count, desc, eq, inArray } from "drizzle-orm";
 import { db } from "@/db";
-import { postImages, posts, user } from "@/db/schema";
+import { comments, postImages, postLikes, posts, user } from "@/db/schema";
 import { canAccess, type Viewer } from "@/lib/access";
 import { checkImages, removeStored, storeImages, UploadError } from "@/lib/uploads";
-import { getBoard } from "./boards";
+import { getBoard, listBoardsFor } from "./boards";
 
 export class PostInputError extends Error {}
 export class NoBoardAccessError extends Error {
@@ -89,4 +89,44 @@ export async function listPosts(boardId: string): Promise<PostView[]> {
     author,
     images: imgs.filter((i) => i.postId === post.id).map(({ id, path, contentType }) => ({ id, path, contentType })),
   }));
+}
+
+export type LatestPost = {
+  id: string;
+  boardId: string;
+  boardName: string;
+  bodyMd: string;
+  createdAt: Date;
+  author: { id: string; name: string; image: string | null };
+  replies: number;
+  likes: number;
+};
+
+/** AC-12: the newest post on any board this viewer can see, for the home sidebar. */
+export async function latestVisiblePost(viewer: Viewer): Promise<LatestPost | null> {
+  if (!viewer) return null;
+  const boards = await listBoardsFor(viewer);
+  if (!boards.length) return null;
+  const [row] = await db
+    .select({ post: posts, author: { id: user.id, name: user.name, image: user.image } })
+    .from(posts)
+    .innerJoin(user, eq(user.id, posts.authorId))
+    .where(inArray(posts.boardId, boards.map((b) => b.id)))
+    .orderBy(desc(posts.createdAt))
+    .limit(1);
+  if (!row) return null;
+  const [[replies], [likes]] = await Promise.all([
+    db.select({ n: count() }).from(comments).where(eq(comments.postId, row.post.id)),
+    db.select({ n: count() }).from(postLikes).where(eq(postLikes.postId, row.post.id)),
+  ]);
+  return {
+    id: row.post.id,
+    boardId: row.post.boardId,
+    boardName: boards.find((b) => b.id === row.post.boardId)!.name,
+    bodyMd: row.post.bodyMd,
+    createdAt: row.post.createdAt,
+    author: row.author,
+    replies: replies?.n ?? 0,
+    likes: likes?.n ?? 0,
+  };
 }
