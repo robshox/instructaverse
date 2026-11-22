@@ -4,6 +4,7 @@ import { refresh } from "next/cache";
 import { createPost, NoBoardAccessError, PostInputError } from "@/lib/community/posts";
 import { getViewer } from "@/lib/session";
 import { addComment, deleteComment, editComment } from "@/lib/community/comments";
+import { setLike, type LikeTarget } from "@/lib/community/likes";
 import { deletePost, editPost, NotAllowedError, pinPost } from "@/lib/community/moderation";
 
 export type PostFormState = { error?: string; ok?: number };
@@ -57,4 +58,8 @@ export async function editCommentAction(_p: ActionResult, f: FormData) {
 }
 export async function deleteCommentAction(_p: ActionResult, f: FormData) {
   return run(async () => deleteComment(await getViewer(), field(f, "commentId")));
+}
+
+export async function setLikeAction(target: LikeTarget, liked: boolean): Promise<ActionResult> {
+  return run(async () => setLike(await getViewer(), target, liked));
 }

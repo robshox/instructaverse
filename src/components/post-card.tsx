@@ -11,8 +11,10 @@ import {
   type ActionResult,
 } from "@/app/(member)/board/actions";
 import { FormMessage, inputClass } from "@/components/form";
+import { LikeButton } from "@/components/like-button";
 import { Markdown } from "@/components/markdown";
 import type { CommentView } from "@/lib/community/comments";
+import type { LikeState } from "@/lib/community/likes";
 import type { PostView } from "@/lib/community/posts";
 
 type Viewer = { id: string; role: string };
@@ -52,7 +54,10 @@ function ConfirmDelete({ action, hidden, label }: { action: Action; hidden: Reco
   );
 }
 
-export function PostCard({ post, comments, viewer }: { post: PostView; comments: CommentView[]; viewer: Viewer }) {
+type Likes = { posts: Map<string, LikeState>; comments: Map<string, LikeState> };
+const noLikes: LikeState = { count: 0, liked: false };
+
+export function PostCard({ post, comments, viewer, likes }: { post: PostView; comments: CommentView[]; viewer: Viewer; likes: Likes }) {
   const [editing, setEditing] = useState(false);
   const isAuthor = post.author.id === viewer.id;
   const isAdmin = viewer.role === "admin";
@@ -111,9 +116,11 @@ export function PostCard({ post, comments, viewer }: { post: PostView; comments:
         </div>
       ) : null}
 
+      <LikeButton target={{ type: "post", id: post.id }} state={likes.posts.get(post.id) ?? noLikes} />
+
       <section aria-label="Comments" className="flex flex-col gap-2 border-t border-zinc-100 pt-3 dark:border-zinc-900">
         {comments.map((c) => (
-          <Comment key={c.id} comment={c} viewer={viewer} />
+          <Comment key={c.id} comment={c} viewer={viewer} like={likes.comments.get(c.id) ?? noLikes} />
         ))}
         <AddComment postId={post.id} />
       </section>
@@ -121,7 +128,7 @@ export function PostCard({ post, comments, viewer }: { post: PostView; comments:
   );
 }
 
-function Comment({ comment, viewer }: { comment: CommentView; viewer: Viewer }) {
+function Comment({ comment, viewer, like }: { comment: CommentView; viewer: Viewer; like: LikeState }) {
   const [editing, setEditing] = useState(false);
   const isAuthor = comment.author.id === viewer.id;
   return (
@@ -158,6 +165,7 @@ function Comment({ comment, viewer }: { comment: CommentView; viewer: Viewer }) 
       ) : (
         <p className="whitespace-pre-wrap">{comment.body}</p>
       )}
+      <LikeButton target={{ type: "comment", id: comment.id }} state={like} />
     </div>
   );
 }

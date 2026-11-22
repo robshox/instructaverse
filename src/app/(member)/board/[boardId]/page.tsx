@@ -6,6 +6,7 @@ import { PostCard } from "@/components/post-card";
 import { canAccess } from "@/lib/access";
 import { getBoard, listBoardsFor } from "@/lib/community/boards";
 import { listComments } from "@/lib/community/comments";
+import { likeSummary } from "@/lib/community/likes";
 import { listPosts } from "@/lib/community/posts";
 import { plansGranting } from "@/lib/courses";
 import { getViewer } from "@/lib/session";
@@ -30,6 +31,11 @@ async function Board({ params }: Pick<PageProps<"/board/[boardId]">, "params">) 
   }
   const [posts, boards] = await Promise.all([listPosts(board.id), listBoardsFor(viewer)]);
   const comments = await listComments(posts.map((p) => p.id));
+  const likes = await likeSummary(
+    viewer.id,
+    posts.map((p) => p.id),
+    [...comments.values()].flat().map((c) => c.id),
+  );
 
   return (
     <main className="flex flex-col gap-6">
@@ -51,7 +57,7 @@ async function Board({ params }: Pick<PageProps<"/board/[boardId]">, "params">) 
       {posts.length === 0 ? <p className="text-sm text-zinc-500">No posts yet. Start the conversation.</p> : null}
       <ul className="flex flex-col gap-4">
         {posts.map((post) => (
-          <PostCard key={post.id} post={post} comments={comments.get(post.id) ?? []} viewer={{ id: viewer.id, role: viewer.role }} />
+          <PostCard key={post.id} post={post} comments={comments.get(post.id) ?? []} viewer={{ id: viewer.id, role: viewer.role }} likes={likes} />
         ))}
       </ul>
     </main>

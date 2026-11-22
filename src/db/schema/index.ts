@@ -6,3 +6,4 @@ export * from "./courses";
 export * from "./progress";
 export * from "./community";
 export * from "./comments";
+export * from "./likes";
