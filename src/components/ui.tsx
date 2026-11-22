@@ -3,7 +3,7 @@ import type { ComponentProps, ReactNode } from "react";
 
 // Switch Dimension UI primitives (spec FR-1.3). Server-safe: no client hooks.
 
-type Variant = "primary" | "secondary" | "outline" | "danger" | "ghost";
+type Variant = "primary" | "secondary" | "outline" | "danger" | "ghost" | "success";
 type Size = "sm" | "md";
 
 const pillBase =
@@ -14,6 +14,7 @@ const pillVariants: Record<Variant, string> = {
   outline: "border-accent text-fg hover:bg-accent hover:text-on-accent",
   danger: "border-danger/50 text-danger hover:bg-danger hover:text-fg",
   ghost: "border-transparent text-muted hover:text-fg",
+  success: "border-ok text-ok hover:bg-ok/10",
 };
 const pillSizes: Record<Size, string> = { sm: "px-3.5 py-1.5 text-[13px]", md: "px-[18px] py-[9px] text-sm" };
 
