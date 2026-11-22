@@ -1,0 +1,15 @@
+.git
+node_modules
+.next
+data
+.env*
+!.env.example
+npm-debug.log*
+coverage
+.agents
+.claude
+molten-docs
+*.md
+!README.md
+Dockerfile
+.dockerignore
