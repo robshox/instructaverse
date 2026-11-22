@@ -1,31 +1,20 @@
-import Link from "next/link";
 import { Suspense, type ReactNode } from "react";
+import { AdminSidebar } from "@/components/admin-sidebar";
+import { BrandLogo } from "@/components/brand-logo";
 import { requireAdmin } from "@/lib/session";
 
+/** Admin shell (FR-3.4): sidebar plus content. The admin gate is unchanged. */
 export default function AdminLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="mx-auto flex min-h-screen max-w-5xl flex-col gap-6 px-4 py-6">
-      <nav className="flex items-center gap-4 border-b border-zinc-200 pb-4 text-sm dark:border-zinc-800">
-        <span className="font-semibold">Admin</span>
-        <Link href="/admin/courses" className="underline-offset-4 hover:underline">
-          Courses
-        </Link>
-        <Link href="/admin/boards" className="underline-offset-4 hover:underline">
-          Boards
-        </Link>
-        <Link href="/admin/events" className="underline-offset-4 hover:underline">
-          Events
-        </Link>
-        <Link href="/admin/plans" className="underline-offset-4 hover:underline">
-          Plans
-        </Link>
-        <Link href="/admin/groups" className="underline-offset-4 hover:underline">
-          Groups
-        </Link>
-      </nav>
-      <Suspense fallback={<p className="text-sm text-zinc-500">Loading…</p>}>
-        <AdminGate>{children}</AdminGate>
-      </Suspense>
+    <div className="flex min-h-screen">
+      <AdminSidebar logo={<BrandLogo href="/admin/courses" />} />
+      <div className="min-w-0 flex-1 px-12 pt-9 pb-16">
+        <div className="max-w-[1040px]">
+          <Suspense fallback={<p className="text-sm text-muted">Loading…</p>}>
+            <AdminGate>{children}</AdminGate>
+          </Suspense>
+        </div>
+      </div>
     </div>
   );
 }
