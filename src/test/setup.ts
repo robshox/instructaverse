@@ -9,3 +9,4 @@ process.env.BASE_URL = "http://localhost:3000";
 process.env.AUTH_SECRET ??= "test-secret-test-secret-test-secret-123";
 process.env.STRIPE_SECRET_KEY = "sk_test_dummy";
 process.env.STRIPE_WEBHOOK_SECRET = "whsec_test_secret";
+process.env.MUX_WEBHOOK_SECRET = "mux_webhook_test_secret";
