@@ -1,3 +1,4 @@
+import { getSessionCookie } from "better-auth/cookies";
 import { NextResponse, type NextRequest } from "next/server";
 import { isSetupComplete } from "@/lib/setup";
 
@@ -14,6 +15,12 @@ export async function proxy(request: NextRequest) {
   }
   if (complete && pathname === "/setup") {
     return NextResponse.rewrite(new URL("/_setup-complete", request.url));
+  }
+  // Home: members go to their courses, visitors to the plans. Only the cookie's
+  // presence is checked here; /courses verifies the session and sends stale
+  // cookies on to /login.
+  if (pathname === "/") {
+    return NextResponse.redirect(new URL(getSessionCookie(request) ? "/courses" : "/pricing", request.url));
   }
   return NextResponse.next();
 }
