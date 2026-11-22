@@ -36,6 +36,7 @@ Earlier in the terminal, Rob approved the Doop redesign ("You did a good job I h
 | 2 | mt-spec | 03-spec.md approved by auto: 10 FR groups, 34 ACs, no schema changes | mt-plan |
 | 3 | mt-plan | 04-plan.md approved by auto: 4 phases, 19 tasks; Linear parent SWI-244 with SWI-245–SWI-263 (blocked-by links set) | mt-build |
 | 4 | mt-build phase 1 | Checkpoint 1 passed: SWI-245–248 done (2df8ebf, e2235e6, 95a6a59, aaec560), 156 tests green | mt-build phase 2 |
+| 5 | mt-build phase 2 | Checkpoint 2 passed: SWI-249–255 done (8811694, f5a7b7f, ec0ea1b, ffd0ed5, d28bba0, ef71966, 6d2e22f), 176 tests green, lint/typecheck/build clean; every member screen browser-checked against its frame, empty states included. Found and filed SWI-265 (also on the base branch: password change lands on /login) | mt-build phase 3 |
 
 ## Decisions made for you
 | # | Step | Question | Chose | Why | Undo cost | By |
