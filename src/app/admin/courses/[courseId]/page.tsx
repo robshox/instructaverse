@@ -72,7 +72,8 @@ export default async function CourseEditorPage({ params }: PageProps<"/admin/cou
             </EditorForm>
           </Card>
 
-          <Card className="overflow-hidden">
+          {/* No overflow-hidden here: the module and lesson menus are absolute popovers and must not be clipped. */}
+          <Card>
             <div className="flex items-center justify-between p-4">
               <Eyebrow accent="Modules & lessons" />
               <span className="font-mono text-xs text-dim">Drag to reorder</span>

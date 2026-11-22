@@ -7,6 +7,7 @@ import { Icon } from "@/components/icon";
 import { Avatar, Card, Eyebrow, PillLink, pillClass, Tag } from "@/components/ui";
 import { getPriceLabel } from "@/lib/billing/prices";
 import { getPlan } from "@/lib/plans";
+import { memberPriceId } from "@/lib/plans/copy";
 import { getViewer } from "@/lib/session";
 import { PasswordForm } from "./password-form";
 
@@ -86,7 +87,8 @@ async function AccountDetails() {
     Promise.all(
       planIds.map(async (id) => {
         const plan = await getPlan(id);
-        return [id, plan ? await getPriceLabel(plan.checkoutPriceId) : null] as const;
+        const priceId = plan ? memberPriceId(plan) : null;
+        return [id, priceId ? await getPriceLabel(priceId) : null] as const;
       }),
     ).then((entries) => new Map(entries)),
   ]);

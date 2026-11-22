@@ -69,13 +69,6 @@ export function SortableList({
           return (
             <li
               key={id}
-              draggable
-              onDragStart={(e) => {
-                e.stopPropagation(); // nested lists: only the innermost item drags
-                setDragging(id);
-                e.dataTransfer.effectAllowed = "move";
-                e.dataTransfer.setData("text/plain", id);
-              }}
               onDragOver={(e) => {
                 if (!dragging) return; // not ours: let an outer list handle it
                 e.preventDefault();
@@ -99,7 +92,21 @@ export function SortableList({
               }}
               className={`flex items-center gap-3 ${dragging === id ? "opacity-40" : ""} ${over === id && dragging !== id ? "shadow-[inset_0_2px_0_var(--color-accent)]" : ""} ${itemClassName}`}
             >
-              <span className="cursor-grab text-dim active:cursor-grabbing" title="Drag to reorder" aria-hidden>
+              {/* Only the handle drags, so text in inputs inside the row stays selectable. */}
+              <span
+                draggable
+                onDragStart={(e) => {
+                  e.stopPropagation(); // nested lists: only the innermost item drags
+                  setDragging(id);
+                  e.dataTransfer.effectAllowed = "move";
+                  e.dataTransfer.setData("text/plain", id);
+                  const row = e.currentTarget.closest("li");
+                  if (row) e.dataTransfer.setDragImage(row, 16, 16);
+                }}
+                className="cursor-grab text-dim active:cursor-grabbing"
+                title="Drag to reorder"
+                aria-hidden
+              >
                 <Icon name="grip-vertical" size={16} />
               </span>
               <div className="min-w-0 flex-1">{item.content}</div>

@@ -18,3 +18,12 @@ describe("plan card copy (AC-23)", () => {
     expect(splitPriceLabel("£199")).toEqual({ amount: "£199", cadence: "" });
   });
 });
+
+describe("member's price (AC-22, review blocker)", () => {
+  it("is known only when the plan has a single Stripe price", async () => {
+    const { memberPriceId } = await import("@/lib/plans/copy");
+    expect(memberPriceId({ stripePriceIds: ["price_only"] })).toBe("price_only");
+    expect(memberPriceId({ stripePriceIds: ["price_new", "price_legacy"] })).toBeNull();
+    expect(memberPriceId({ stripePriceIds: [] })).toBeNull();
+  });
+});

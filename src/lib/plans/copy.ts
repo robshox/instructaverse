@@ -12,3 +12,12 @@ export function splitPriceLabel(label: string): { amount: string; cadence: strin
   const [amount = "", ...rest] = label.split(" ");
   return { amount, cadence: rest.join(" ") };
 }
+
+/**
+ * The Stripe price a member of this plan pays, when that's certain: plans keep
+ * older prices so legacy subscribers map to them, and a purchase doesn't record
+ * which one it used, so with more than one price we can't say.
+ */
+export function memberPriceId(plan: { stripePriceIds: string[] }): string | null {
+  return plan.stripePriceIds.length === 1 ? plan.stripePriceIds[0]! : null;
+}
