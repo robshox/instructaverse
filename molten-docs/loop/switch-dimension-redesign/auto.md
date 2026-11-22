@@ -38,6 +38,7 @@ Earlier in the terminal, Rob approved the Doop redesign ("You did a good job I h
 | 4 | mt-build phase 1 | Checkpoint 1 passed: SWI-245–248 done (2df8ebf, e2235e6, 95a6a59, aaec560), 156 tests green | mt-build phase 2 |
 | 5 | mt-build phase 2 | Checkpoint 2 passed: SWI-249–255 done (8811694, f5a7b7f, ec0ea1b, ffd0ed5, d28bba0, ef71966, 6d2e22f), 176 tests green, lint/typecheck/build clean; every member screen browser-checked against its frame, empty states included. Found and filed SWI-265 (also on the base branch: password change lands on /login) | mt-build phase 3 |
 | 6 | mt-build phase 3 | Checkpoint 3 passed: SWI-256–257 done (ec5e070, 55d063b), 179 tests green, lint/typecheck/build clean; pricing, no-access, login (magic link via Mailpit and password), reset, setup (throwaway instance) and after-checkout browser-checked. Stripe prices and the checkout ready state need real Stripe test keys (SWI-230) | mt-build phase 4 |
+| 7 | mt-build phase 4 | Checkpoint 4 passed: SWI-258–263 done (fe02a93, 30b9a85, f9bf504, b30c261, 851955c, fd913a0); 188 tests in 39 files green; lint, typecheck and build clean; Docker image builds and runs (runtime BRAND_NAME in titles, fonts served); every admin screen browser-checked including drag reorder of lessons, modules and boards. Plan done | mt-verify |
 
 ## Decisions made for you
 | # | Step | Question | Chose | Why | Undo cost | By |

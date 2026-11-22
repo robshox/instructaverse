@@ -3,7 +3,7 @@ feature: Switch Dimension redesign
 slug: switch-dimension-redesign
 created: 2026-11-22
 spec: molten-docs/loop/switch-dimension-redesign/03-spec.md
-status: approved
+status: done
 approved_by: auto
 issue_tracker: linear
 tracker_parent: https://linear.app/switch-dimension/issue/SWI-244
