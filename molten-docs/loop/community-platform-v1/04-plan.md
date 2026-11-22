@@ -3,7 +3,7 @@ feature: Course & community platform v1 (Circle replacement)
 slug: community-platform-v1
 created: 2026-11-22
 spec: molten-docs/loop/community-platform-v1/03-spec.md
-status: approved
+status: in-progress
 issue_tracker: linear
 tracker_parent: https://linear.app/switch-dimension/issue/SWI-198
 molten_next_skill: mt-build
