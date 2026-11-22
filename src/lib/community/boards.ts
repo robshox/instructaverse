@@ -1,6 +1,6 @@
-import { asc, eq, inArray, max } from "drizzle-orm";
+import { asc, count, eq, inArray, max } from "drizzle-orm";
 import { db } from "@/db";
-import { boardGroups, boards } from "@/db/schema";
+import { boardGroups, boards, posts } from "@/db/schema";
 import { canAccess, type Viewer } from "@/lib/access";
 
 export type Board = typeof boards.$inferSelect & { groupIds: string[] };
@@ -60,4 +60,17 @@ export async function listBoardsFor(viewer: Viewer): Promise<Board[]> {
   const all = await listBoards();
   const visible = await Promise.all(all.map((b) => canAccess(viewer, b.groupIds)));
   return all.filter((_, i) => visible[i]);
+}
+
+/** AC-18: the boards this viewer can see, in board order, each with its post count. */
+export async function boardsWithCounts(viewer: Viewer): Promise<(Board & { postCount: number })[]> {
+  const visible = await listBoardsFor(viewer);
+  if (!visible.length) return [];
+  const counts = await db
+    .select({ boardId: posts.boardId, n: count() })
+    .from(posts)
+    .where(inArray(posts.boardId, visible.map((b) => b.id)))
+    .groupBy(posts.boardId);
+  const byBoard = new Map(counts.map((c) => [c.boardId, c.n]));
+  return visible.map((b) => ({ ...b, postCount: byBoard.get(b.id) ?? 0 }));
 }

@@ -2,10 +2,11 @@
 
 import { useOptimistic, useTransition } from "react";
 import { setLikeAction } from "@/app/(member)/board/actions";
+import { Icon } from "@/components/icon";
 import type { LikeState, LikeTarget } from "@/lib/community/likes";
 
 /** Like / unlike with an optimistic count (AC-46). */
-export function LikeButton({ target, state }: { target: LikeTarget; state: LikeState }) {
+export function LikeButton({ target, state, size = 15 }: { target: LikeTarget; state: LikeState; size?: number }) {
   const [optimistic, setOptimistic] = useOptimistic(state);
   const [, startTransition] = useTransition();
 
@@ -23,9 +24,11 @@ export function LikeButton({ target, state }: { target: LikeTarget; state: LikeS
       onClick={toggle}
       aria-pressed={optimistic.liked}
       aria-label={`${optimistic.liked ? "Unlike" : "Like"} (${optimistic.count} ${optimistic.count === 1 ? "like" : "likes"})`}
-      className={`flex items-center gap-1 text-xs ${optimistic.liked ? "font-semibold text-rose-600" : "text-zinc-600 dark:text-zinc-400"}`}
+      className={`inline-flex items-center gap-1.5 font-mono text-xs hover:text-fg ${optimistic.liked ? "text-fg" : "text-muted"}`}
     >
-      <span aria-hidden>{optimistic.liked ? "♥" : "♡"}</span>
+      <span className={optimistic.liked ? "text-accent [&_svg]:fill-current" : ""}>
+        <Icon name="heart" size={size} />
+      </span>
       <span aria-hidden>{optimistic.count}</span>
     </button>
   );

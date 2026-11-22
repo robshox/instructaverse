@@ -19,7 +19,7 @@ export type PostView = {
   pinned: boolean;
   createdAt: Date;
   updatedAt: Date;
-  author: { id: string; name: string; image: string | null };
+  author: { id: string; name: string; image: string | null; role: string };
   images: { id: string; path: string; contentType: string }[];
 };
 
@@ -68,7 +68,7 @@ export async function setPinned(postId: string, pinned: boolean) {
 /** Pinned posts first, then newest first (FR-5.4). */
 export async function listPosts(boardId: string): Promise<PostView[]> {
   const rows = await db
-    .select({ post: posts, author: { id: user.id, name: user.name, image: user.image } })
+    .select({ post: posts, author: { id: user.id, name: user.name, image: user.image, role: user.role } })
     .from(posts)
     .innerJoin(user, eq(user.id, posts.authorId))
     .where(eq(posts.boardId, boardId))
