@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { CompleteButton } from "@/components/complete-button";
 import { LessonPlayer } from "@/components/lesson-player";
+import { Markdown } from "@/components/markdown";
 import { NoAccess } from "@/components/no-access";
 import { getLessonForViewer } from "@/lib/courses";
 import { completedLessonIds } from "@/lib/courses/progress";
@@ -53,10 +54,7 @@ async function Lesson({ params }: Pick<Props, "params">) {
           Video processing…
         </div>
       ) : null}
-      {lesson.bodyMd ? (
-        // Plain text for now; Markdown rendering needs a dependency decision.
-        <div className="whitespace-pre-wrap leading-relaxed">{lesson.bodyMd}</div>
-      ) : null}
+      {lesson.bodyMd ? <Markdown>{lesson.bodyMd}</Markdown> : null}
       {transcriptText ? (
         <details className="rounded-md border border-zinc-200 p-4 dark:border-zinc-800">
           <summary className="cursor-pointer font-medium">Transcript</summary>
