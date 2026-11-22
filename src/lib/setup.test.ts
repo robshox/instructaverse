@@ -38,7 +38,7 @@ describe("first-admin setup (AC-1)", () => {
     const created = await createFirstAdmin(admin);
     expect(created.role).toBe("admin");
     const [row] = await db.select().from(user);
-    expect(row).toMatchObject({ email: admin.email, role: "admin" });
+    expect(row).toMatchObject({ email: admin.email, role: "admin", emailVerified: true });
     expect(isSetupComplete()).toBe(true);
   });
 

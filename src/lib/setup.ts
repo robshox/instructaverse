@@ -1,4 +1,4 @@
-import { count } from "drizzle-orm";
+import { count, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { user } from "@/db/schema";
 import { auth, setupContext } from "@/lib/auth";
@@ -31,8 +31,12 @@ export async function createFirstAdmin(input: { name: string; email: string; pas
   inFlight = run;
   try {
     const { user: created } = await run;
+    // The installer owns this address. Marking it verified also stops Better Auth
+    // from wiping the admin's password the first time they use a magic link
+    // (its protection against pre-registered, unverified accounts).
+    await db.update(user).set({ emailVerified: true }).where(eq(user.id, created.id));
     complete = true;
-    return created as typeof created & { role: string };
+    return { ...created, emailVerified: true } as typeof created & { role: string };
   } finally {
     inFlight = undefined;
   }
