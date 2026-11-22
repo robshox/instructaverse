@@ -51,6 +51,7 @@ Every domain gets a small service module (`src/lib/<domain>/`). Admin pages (ser
 - [SWI-206](https://linear.app/switch-dimension/issue/SWI-206) 2.4 Subscription lifecycle and refund handling · wave 7
 - [SWI-207](https://linear.app/switch-dimension/issue/SWI-207) 2.5 Account page, Customer Portal and post-checkout "finishing setup" · wave 7
 - **Checkpoint 2:** a full test-mode run with the Stripe CLI: buy → access → cancel → revoke. You review the access rules.
+  - **Deferred (2026-11-22, user request):** the Stripe test-mode run and access-rules review move to the end, tracked in [SWI-230](https://linear.app/switch-dimension/issue/SWI-230), which blocks 7.2. Everything else in Checkpoint 2 passed (fixture-event tests and browser checks).
 
 ## Phase 3 — Courses
 - [SWI-208](https://linear.app/switch-dimension/issue/SWI-208) 3.1 Course, module and lesson schema with gated member pages · wave 8
