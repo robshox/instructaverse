@@ -3,3 +3,4 @@ export * from "./access";
 export * from "./plans";
 export * from "./billing";
 export * from "./courses";
+export * from "./progress";

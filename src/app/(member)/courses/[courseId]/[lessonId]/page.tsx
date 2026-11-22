@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import { CompleteButton } from "@/components/complete-button";
 import { LessonPlayer } from "@/components/lesson-player";
 import { NoAccess } from "@/components/no-access";
 import { getLessonForViewer } from "@/lib/courses";
+import { completedLessonIds } from "@/lib/courses/progress";
 import { isVtt, playbackFor, vttToText } from "@/lib/mux";
 import { getViewer } from "@/lib/session";
 
@@ -26,7 +28,10 @@ async function Lesson({ params }: Pick<Props, "params">) {
     return <NoAccess title={result.courseTitle} plans={result.plans} signedIn={Boolean(viewer)} />;
   }
   const { course, lesson } = result;
-  const playback = await playbackFor(viewer, lesson.id);
+  const [playback, done] = await Promise.all([
+    playbackFor(viewer, lesson.id),
+    viewer ? completedLessonIds(viewer.id, course.id) : Promise.resolve([]),
+  ]);
   const vtt = isVtt(lesson.transcript);
   const transcriptText = vtt ? vttToText(lesson.transcript!) : lesson.transcript;
 
@@ -58,6 +63,7 @@ async function Lesson({ params }: Pick<Props, "params">) {
           <div className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">{transcriptText}</div>
         </details>
       ) : null}
+      {viewer ? <CompleteButton lessonId={lesson.id} complete={done.includes(lesson.id)} /> : null}
     </main>
   );
 }
