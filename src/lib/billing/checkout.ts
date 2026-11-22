@@ -1,4 +1,7 @@
+import { eq } from "drizzle-orm";
 import type Stripe from "stripe";
+import { db } from "@/db";
+import { purchases, user } from "@/db/schema";
 import type { Plan } from "@/lib/plans";
 import { stripe } from "./stripe";
 
@@ -36,4 +39,19 @@ export async function createCheckoutSession(plan: Plan, viewer: CheckoutViewer):
   const session = await stripe.checkout.sessions.create(checkoutSessionParams(plan, viewer, process.env.BASE_URL!));
   if (!session.url) throw new Error("Stripe didn't return a checkout URL");
   return session.url;
+}
+
+/** Has the webhook for this Checkout Session been processed (purchase recorded, access granted)? */
+export async function checkoutReady(sessionId: string): Promise<boolean> {
+  return (await db.$count(purchases, eq(purchases.stripeCheckoutSessionId, sessionId))) > 0;
+}
+
+/** Email of the account that this checkout created or linked; never sent to the browser. */
+export async function checkoutAccountEmail(sessionId: string): Promise<string | null> {
+  const [row] = await db
+    .select({ email: user.email })
+    .from(purchases)
+    .innerJoin(user, eq(user.id, purchases.userId))
+    .where(eq(purchases.stripeCheckoutSessionId, sessionId));
+  return row?.email ?? null;
 }
