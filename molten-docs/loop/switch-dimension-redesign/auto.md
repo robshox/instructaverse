@@ -2,14 +2,14 @@
 feature: Switch Dimension redesign
 slug: switch-dimension-redesign
 created: 2026-11-22
-status: running
+status: done
 started_at: mt-discovery
 stop_after: mt-ship
 push: true
 max_fix_attempts: 3
 max_loop_backs: 2
 loop_backs: 1
-pr: null
+pr: https://github.com/robshox/instructaverse/pull/1
 ---
 
 # Auto — Switch Dimension redesign
@@ -44,6 +44,7 @@ Earlier in the terminal, Rob approved the Doop redesign ("You did a good job I h
 | 10 | mt-build (loop-back 1) | SWI-273 fixed in 0ee82fd: editor menus no longer clipped; account price only for single-price plans (memberPriceId + test); drag from handle only | mt-verify |
 | 11 | mt-verify | 05-verify.md updated: re-verified menus, handle drags and price rule; verdict still partial (environment only); 192 tests green | mt-review |
 | 12 | mt-review | 06-review.md re-review: approve-with-suggestions; both blockers resolved, no new findings; open suggestions: remove unused up/down swap path, DOM test for AC-30 | mt-ship |
+| 13 | mt-ship | 07-ship.md: pr-open, https://github.com/robshox/instructaverse/pull/1 (base feat/SWI-198-community-platform-v1); gates pass on 0353a37 (build, 192 tests, lint, types, gitleaks, Docker); no CI or preview configured; 08-retro.md with 5 pending suggestions | done |
 
 ## Decisions made for you
 | # | Step | Question | Chose | Why | Undo cost | By |
