@@ -1,8 +1,12 @@
-import { and, desc, eq, isNotNull } from "drizzle-orm";
+import { and, desc, eq, inArray, isNotNull } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { db } from "@/db";
-import { account, plans, purchases, user } from "@/db/schema";
+import { account, groups, planGroups, plans, purchases, user } from "@/db/schema";
+import { Icon } from "@/components/icon";
+import { Avatar, Card, Eyebrow, PillLink, pillClass, Tag } from "@/components/ui";
+import { getPriceLabel } from "@/lib/billing/prices";
+import { getPlan } from "@/lib/plans";
 import { getViewer } from "@/lib/session";
 import { PasswordForm } from "./password-form";
 
@@ -10,12 +14,11 @@ export const metadata = { title: "Your account" };
 
 export default function AccountPage({ searchParams }: PageProps<"/account">) {
   return (
-    <main className="mx-auto flex min-h-screen max-w-2xl flex-col gap-8 px-4 py-12">
-      <h1 className="text-2xl font-semibold">Your account</h1>
+    <main className="flex flex-col gap-8">
       <Suspense>
         <BillingNotice searchParams={searchParams} />
       </Suspense>
-      <Suspense fallback={<p className="text-sm text-zinc-500">Loading…</p>}>
+      <Suspense fallback={<p className="text-sm text-muted">Loading…</p>}>
         <AccountDetails />
       </Suspense>
     </main>
@@ -26,7 +29,7 @@ async function BillingNotice({ searchParams }: Pick<PageProps<"/account">, "sear
   const { billing } = await searchParams;
   if (billing !== "unavailable") return null;
   return (
-    <p role="alert" className="rounded-md bg-amber-50 p-3 text-sm text-amber-900 dark:bg-amber-950 dark:text-amber-100">
+    <p role="alert" className="rounded-md border border-warn/40 bg-warn/10 p-3 text-sm text-warn">
       Billing is temporarily unavailable. Please try again in a few minutes.
     </p>
   );
@@ -41,17 +44,26 @@ const statusText: Record<string, string> = {
   paid: "Paid",
   refunded: "Refunded",
 };
+const statusTone: Record<string, "ok" | "warn" | "dim" | "danger"> = {
+  active: "ok",
+  trialing: "ok",
+  paid: "ok",
+  past_due: "warn",
+  canceled: "dim",
+  unpaid: "danger",
+  refunded: "dim",
+};
 
-const date = (d: Date) => d.toLocaleDateString("en", { day: "numeric", month: "long", year: "numeric" });
+const date = (d: Date) => d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 
 async function AccountDetails() {
   const viewer = await getViewer();
   if (!viewer) redirect("/login");
 
   const [[member], rows, [credential]] = await Promise.all([
-    db.select({ stripeCustomerId: user.stripeCustomerId }).from(user).where(eq(user.id, viewer.id)),
+    db.select({ stripeCustomerId: user.stripeCustomerId, createdAt: user.createdAt }).from(user).where(eq(user.id, viewer.id)),
     db
-      .select({ purchase: purchases, planName: plans.name })
+      .select({ purchase: purchases, planName: plans.name, planDescription: plans.description, planType: plans.type })
       .from(purchases)
       .innerJoin(plans, eq(plans.id, purchases.planId))
       .where(eq(purchases.userId, viewer.id))
@@ -62,47 +74,122 @@ async function AccountDetails() {
       .where(and(eq(account.userId, viewer.id), eq(account.providerId, "credential"), isNotNull(account.password))),
   ]);
 
+  const planIds = [...new Set(rows.map((r) => r.purchase.planId))];
+  const [grants, prices] = await Promise.all([
+    planIds.length
+      ? db
+          .select({ planId: planGroups.planId, name: groups.name })
+          .from(planGroups)
+          .innerJoin(groups, eq(groups.id, planGroups.groupId))
+          .where(inArray(planGroups.planId, planIds))
+      : Promise.resolve([]),
+    Promise.all(
+      planIds.map(async (id) => {
+        const plan = await getPlan(id);
+        return [id, plan ? await getPriceLabel(plan.checkoutPriceId) : null] as const;
+      }),
+    ).then((entries) => new Map(entries)),
+  ]);
+
   return (
     <>
-      <section className="flex flex-col gap-1">
-        <p className="font-medium">{viewer.name}</p>
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">{viewer.email}</p>
-      </section>
+      <div>
+        <Eyebrow>
+          Settings <b className="font-normal text-accent">·</b> Account
+        </Eyebrow>
+        <div className="mt-3.5 flex items-center gap-[18px]">
+          <Avatar name={viewer.name} size={56} />
+          <div>
+            <h1 className="text-[40px] leading-[1.05] font-medium tracking-[-.04em]">{viewer.name}</h1>
+            <p className="mt-1 font-mono text-[13px] text-muted">
+              {viewer.email}
+              {member?.createdAt ? ` · member since ${member.createdAt.toLocaleDateString("en-GB", { month: "short", year: "numeric" })}` : ""}
+            </p>
+          </div>
+        </div>
+      </div>
 
-      <section className="flex flex-col gap-4">
-        <h2 className="text-lg font-semibold">Membership</h2>
-        {rows.length === 0 ? (
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">
-            No membership yet. <a href="/pricing" className="underline">See plans</a>
-          </p>
-        ) : (
-          <ul className="divide-y divide-zinc-200 dark:divide-zinc-800">
-            {rows.map(({ purchase, planName }) => (
-              <li key={purchase.id} className="flex flex-wrap justify-between gap-2 py-3">
-                <span className="font-medium">{planName}</span>
-                <span className="text-sm text-zinc-600 dark:text-zinc-400">
-                  {statusText[purchase.status] ?? purchase.status}
-                  {purchase.currentPeriodEnd && !["canceled", "unpaid"].includes(purchase.status)
-                    ? ` · ${purchase.cancelAtPeriodEnd ? "ends" : "renews"} ${date(purchase.currentPeriodEnd)}`
-                    : ""}
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
-        {member?.stripeCustomerId ? (
-          <form method="post" action="/account/billing">
-            <button className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium dark:border-zinc-700">
-              Manage billing
-            </button>
-          </form>
-        ) : null}
-      </section>
+      <div className="grid items-start gap-5 md:grid-cols-2">
+        <div className="flex flex-col gap-5">
+          {rows.length === 0 ? (
+            <Card className="p-6">
+              <Eyebrow accent="Membership" />
+              <p className="mt-3.5 text-muted">No membership yet.</p>
+              <PillLink href="/pricing" className="mt-5">
+                See plans <Icon name="arrow-right" size={16} />
+              </PillLink>
+            </Card>
+          ) : (
+            rows.map(({ purchase, planName, planDescription, planType }) => {
+              const ended = ["canceled", "unpaid", "refunded"].includes(purchase.status);
+              const price = prices.get(purchase.planId);
+              const groupNames = grants.filter((g) => g.planId === purchase.planId).map((g) => g.name);
+              return (
+                <Card key={purchase.id} className="p-6">
+                  <div className="flex items-center justify-between gap-3">
+                    <Eyebrow accent="Membership" />
+                    <Tag tone={statusTone[purchase.status] ?? "default"}>
+                      <span aria-hidden>●</span> {statusText[purchase.status] ?? purchase.status}
+                    </Tag>
+                  </div>
+                  <h2 className="mt-3.5 text-[26px] font-medium tracking-[-.03em]">{planName}</h2>
+                  {planDescription ? <p className="text-sm text-muted">{planDescription}</p> : null}
+                  <dl className="mt-[18px] text-sm">
+                    <Row label="Plan">
+                      {planType === "recurring" ? "Subscription" : "One-off"}
+                      {price ? ` · ${price}` : ""}
+                    </Row>
+                    {purchase.currentPeriodEnd && !ended ? (
+                      <Row label={planType === "recurring" ? (purchase.cancelAtPeriodEnd ? "Ends" : "Renews") : "Access"}>
+                        <span className="font-mono text-[13px]">
+                          {planType === "recurring" ? "" : "until "}
+                          {date(purchase.currentPeriodEnd)}
+                        </span>
+                      </Row>
+                    ) : null}
+                    <Row label="Since">
+                      <span className="font-mono text-[13px]">{date(purchase.createdAt)}</span>
+                    </Row>
+                    {groupNames.length ? <Row label="Groups">{groupNames.join(", ")}</Row> : null}
+                  </dl>
+                </Card>
+              );
+            })
+          )}
+          {member?.stripeCustomerId || rows.length ? (
+            <div className="flex flex-wrap gap-2.5">
+              {member?.stripeCustomerId ? (
+                <form method="post" action="/account/billing">
+                  <button className={pillClass("secondary")}>
+                    <Icon name="credit-card" size={16} /> Manage billing
+                  </button>
+                </form>
+              ) : null}
+              {rows.length ? (
+                <PillLink href="/pricing" variant="ghost">
+                  See other plans →
+                </PillLink>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
 
-      <section className="flex flex-col gap-4">
-        <h2 className="text-lg font-semibold">Password</h2>
-        <PasswordForm hasPassword={Boolean(credential)} />
-      </section>
+        <Card className="p-6">
+          <Eyebrow accent="Password" />
+          <div className="mt-3">
+            <PasswordForm hasPassword={Boolean(credential)} />
+          </div>
+        </Card>
+      </div>
     </>
+  );
+}
+
+function Row({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-between gap-4 border-t border-line py-3.5">
+      <dt className="text-muted">{label}</dt>
+      <dd className="text-right">{children}</dd>
+    </div>
   );
 }
