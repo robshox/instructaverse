@@ -1,18 +1,27 @@
 "use client";
 
 import { useActionState } from "react";
-import { Field, FormMessage, SubmitButton } from "@/components/form";
+import { Field, FormMessage, PromptField, SubmitButton } from "@/components/form";
 import { requestReset, setNewPassword, type FormState } from "./actions";
 
 export function RequestResetForm() {
   const [state, action, pending] = useActionState<FormState, FormData>(requestReset, {});
   return (
-    <form action={action} className="flex flex-col gap-4">
-      <Field label="Email" name="email" type="email" autoComplete="email" required />
+    <form action={action} className="flex flex-col gap-2">
+      <PromptField
+        label="Email"
+        name="email"
+        type="email"
+        autoComplete="email"
+        placeholder="you@example.com"
+        required
+        button={
+          <SubmitButton pending={pending} pendingText="Sending…">
+            Email me a reset link
+          </SubmitButton>
+        }
+      />
       <FormMessage error={state.error} success={state.success} />
-      <SubmitButton pending={pending} pendingText="Sending…">
-        Email me a reset link
-      </SubmitButton>
     </form>
   );
 }

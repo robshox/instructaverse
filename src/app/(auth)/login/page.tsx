@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { AuthNotice, AuthShell } from "@/components/auth-shell";
 import { LoginForms } from "./login-forms";
 
 export const metadata = { title: "Sign in" };
@@ -10,13 +11,12 @@ const errors: Record<string, string> = {
 
 export default function LoginPage({ searchParams }: PageProps<"/login">) {
   return (
-    <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-6 px-4">
-      <h1 className="text-2xl font-semibold">Sign in</h1>
+    <AuthShell eyebrow="Member login" title="Welcome back." lede="We'll email you a link that signs you in. It works once and expires in 15 minutes.">
       <Suspense>
         <LinkError searchParams={searchParams} />
       </Suspense>
       <LoginForms />
-    </main>
+    </AuthShell>
   );
 }
 
@@ -24,9 +24,5 @@ async function LinkError({ searchParams }: Pick<PageProps<"/login">, "searchPara
   const { error } = await searchParams;
   const message = typeof error === "string" ? (errors[error] ?? "Something went wrong. Please try again.") : null;
   if (!message) return null;
-  return (
-    <p role="alert" className="rounded-md bg-amber-50 p-3 text-sm text-amber-900 dark:bg-amber-950 dark:text-amber-100">
-      {message}
-    </p>
-  );
+  return <AuthNotice>{message}</AuthNotice>;
 }

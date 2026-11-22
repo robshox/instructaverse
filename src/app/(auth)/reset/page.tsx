@@ -1,16 +1,16 @@
 import { Suspense } from "react";
+import { AuthNotice, AuthShell } from "@/components/auth-shell";
 import { NewPasswordForm, RequestResetForm } from "./reset-forms";
 
 export const metadata = { title: "Reset your password" };
 
 export default function ResetPage({ searchParams }: PageProps<"/reset">) {
   return (
-    <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-6 px-4">
-      <h1 className="text-2xl font-semibold">Reset your password</h1>
+    <AuthShell eyebrow="Reset password" title="Reset your password." headerLink="login">
       <Suspense>
         <ResetStep searchParams={searchParams} />
       </Suspense>
-    </main>
+    </AuthShell>
   );
 }
 
@@ -19,11 +19,8 @@ async function ResetStep({ searchParams }: Pick<PageProps<"/reset">, "searchPara
   if (typeof token === "string" && token) return <NewPasswordForm token={token} />;
   return (
     <>
-      {error ? (
-        <p role="alert" className="rounded-md bg-amber-50 p-3 text-sm text-amber-900 dark:bg-amber-950 dark:text-amber-100">
-          That reset link has expired or was already used. Request a new one below.
-        </p>
-      ) : null}
+      {error ? <AuthNotice>That reset link has expired or was already used. Request a new one below.</AuthNotice> : null}
+      <p className="mb-5 text-muted">Enter your email and we&rsquo;ll send you a link to choose a new password.</p>
       <RequestResetForm />
     </>
   );
