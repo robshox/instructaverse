@@ -2,8 +2,8 @@ import { eq, sql } from "drizzle-orm";
 import type Stripe from "stripe";
 import { db } from "@/db";
 import { purchases, user } from "@/db/schema";
-import { grantMembership } from "@/lib/access";
-import { getPlan } from "@/lib/plans";
+import { grantMembership, revokeBySource } from "@/lib/access";
+import { getPlan, planForPrice, type Plan } from "@/lib/plans";
 import { idOf } from "./stripe";
 
 /** Apply one verified Stripe event. Every handler is safe to run twice. */
@@ -11,6 +11,13 @@ export async function handleStripeEvent(event: Stripe.Event): Promise<void> {
   switch (event.type) {
     case "checkout.session.completed":
       await onCheckoutCompleted(event.data.object);
+      break;
+    case "customer.subscription.updated":
+    case "customer.subscription.deleted":
+      await onSubscriptionChanged(event.data.object, new Date(event.created * 1000));
+      break;
+    case "charge.refunded":
+      await onChargeRefunded(event.data.object);
       break;
     default:
       // Not an event we act on.
@@ -53,9 +60,7 @@ async function onCheckoutCompleted(session: Stripe.Checkout.Session) {
     })
     .onConflictDoNothing();
 
-  for (const groupId of plan.groupIds) {
-    await grantMembership({ userId: member.id, groupId, source: "plan", sourceRef });
-  }
+  await grantPlan(member.id, plan, sourceRef, null);
 }
 
 /**
@@ -88,4 +93,55 @@ async function findOrCreateMember(session: Stripe.Checkout.Session, customerId: 
     member = { ...member, stripeCustomerId: customerId };
   }
   return member ?? null;
+}
+
+/** Statuses that end access (AC-8). `past_due` keeps it while Stripe retries (AC-10). */
+const ENDED = new Set(["canceled", "unpaid", "incomplete_expired"]);
+
+async function grantPlan(userId: string, plan: Plan, sourceRef: string, expiresAt: Date | null) {
+  for (const groupId of plan.groupIds) {
+    await grantMembership({ userId, groupId, source: "plan", sourceRef, expiresAt });
+  }
+}
+
+async function onSubscriptionChanged(sub: Stripe.Subscription, eventAt: Date) {
+  const [purchase] = await db.select().from(purchases).where(eq(purchases.stripeSubscriptionId, sub.id));
+  if (!purchase) return; // Not one of ours (or checkout hasn't been processed yet; it grants the current state).
+  if (purchase.lastEventAt && eventAt < purchase.lastEventAt) return; // stale, delivered out of order
+
+  const item = sub.items.data[0];
+  const periodEnd = item?.current_period_end ? new Date(item.current_period_end * 1000) : null;
+  // A price change (e.g. switching plan in the billing portal) moves the purchase to that plan.
+  const priceId = item?.price?.id;
+  const newPlan = priceId ? await planForPrice(priceId) : null;
+  const plan = newPlan ?? (await getPlan(purchase.planId));
+
+  await db
+    .update(purchases)
+    .set({
+      planId: plan?.id ?? purchase.planId,
+      status: sub.status,
+      cancelAtPeriodEnd: sub.cancel_at_period_end,
+      currentPeriodEnd: periodEnd,
+      lastEventAt: eventAt,
+      updatedAt: new Date(),
+    })
+    .where(eq(purchases.id, purchase.id));
+
+  // Start from a clean slate for this subscription, then grant what its current state allows.
+  await revokeBySource("plan", sub.id);
+  if (ENDED.has(sub.status) || !plan) return;
+  // AC-9: a pending cancellation keeps access until the period ends, and the
+  // expiry makes sure it stops then even if the final webhook never arrives.
+  await grantPlan(purchase.userId, plan, sub.id, sub.cancel_at_period_end ? periodEnd : null);
+}
+
+/** AC-15: a full refund of a one-off purchase removes the groups it granted. */
+async function onChargeRefunded(charge: Stripe.Charge) {
+  const paymentIntentId = idOf(charge.payment_intent);
+  if (!paymentIntentId || !charge.refunded) return; // partial refunds keep access
+  const [purchase] = await db.select().from(purchases).where(eq(purchases.stripePaymentIntentId, paymentIntentId));
+  if (!purchase) return;
+  await db.update(purchases).set({ status: "refunded", updatedAt: new Date() }).where(eq(purchases.id, purchase.id));
+  await revokeBySource("plan", paymentIntentId);
 }

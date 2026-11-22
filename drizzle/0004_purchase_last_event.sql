@@ -1,0 +1,1 @@
+ALTER TABLE `purchases` ADD `last_event_at` integer;

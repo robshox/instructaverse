@@ -24,6 +24,8 @@ export const purchases = sqliteTable(
     status: text("status").notNull(),
     currentPeriodEnd: integer("current_period_end", { mode: "timestamp_ms" }),
     cancelAtPeriodEnd: integer("cancel_at_period_end", { mode: "boolean" }).notNull().default(false),
+    /** `created` time of the newest Stripe event applied; older ones are ignored (out-of-order delivery). */
+    lastEventAt: integer("last_event_at", { mode: "timestamp_ms" }),
     createdAt: integer("created_at", { mode: "timestamp_ms" })
       .notNull()
       .default(sql`(unixepoch() * 1000)`),
