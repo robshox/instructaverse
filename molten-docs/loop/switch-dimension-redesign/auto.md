@@ -43,6 +43,7 @@ Earlier in the terminal, Rob approved the Doop redesign ("You did a good job I h
 | 9 | mt-review | 06-review.md: request-changes (single-context; second opinion skipped). Spec pass; Quality: 2 blockers (course editor menus clipped by an overflow-hidden card; account card may show a price the member does not pay), 2 suggestions | mt-build (loop-back 1 of 2) |
 | 10 | mt-build (loop-back 1) | SWI-273 fixed in 0ee82fd: editor menus no longer clipped; account price only for single-price plans (memberPriceId + test); drag from handle only | mt-verify |
 | 11 | mt-verify | 05-verify.md updated: re-verified menus, handle drags and price rule; verdict still partial (environment only); 192 tests green | mt-review |
+| 12 | mt-review | 06-review.md re-review: approve-with-suggestions; both blockers resolved, no new findings; open suggestions: remove unused up/down swap path, DOM test for AC-30 | mt-ship |
 
 ## Decisions made for you
 | # | Step | Question | Chose | Why | Undo cost | By |

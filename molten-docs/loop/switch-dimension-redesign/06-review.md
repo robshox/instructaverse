@@ -3,10 +3,10 @@ feature: Switch Dimension redesign
 slug: switch-dimension-redesign
 created: 2026-11-22
 spec: molten-docs/loop/switch-dimension-redesign/03-spec.md
-reviewed_commit: 690aaf1
+reviewed_commit: a4d786b (first pass at 690aaf1)
 reviewers: single-context (spec and quality briefs run in turn in the building session; the host spawns subagents only when the user asks, see auto.md decision 3); second opinion skipped
-recommendation: request-changes
-molten_next_skill: mt-build
+recommendation: approve-with-suggestions
+molten_next_skill: mt-ship
 ---
 
 # Review — Switch Dimension redesign
@@ -18,8 +18,8 @@ Scope: `git diff feat/SWI-198-community-platform-v1...HEAD`, 92 files, +4631 / �
 
 ## Summary
 Spec: pass. None of the 34 ACs is missing; the gaps verify recorded are environment-only.
-Quality: fail. The course editor's module and lesson menus are clipped by their card; the account page can show a price the member doesn't pay.
-A careful, well-tested restyle. Two real defects need a short loop-back before shipping.
+Quality: pass after loop-back 1. Both first-pass blockers are fixed (0ee82fd); the worst remaining item is a suggestion (dead up/down swap path).
+A careful, well-tested restyle. The first pass requested changes for two defects, and the re-review below confirms the fixes.
 
 ## Spec findings
 ### Suggestions
@@ -53,5 +53,11 @@ A careful, well-tested restyle. Two real defects need a short loop-back before s
 ## Second opinion
 Skipped. The change doesn't touch auth, payment or migration logic (only the UI on those pages), so it isn't "risky" under the skill's definition. Sending the code to another provider's CLI (Codex) also isn't covered by the brief from Rob.
 
+## Re-review (loop-back 1, 690aaf1..a4d786b)
+- **Blocker 1 (editor menus clipped): resolved.** `overflow-hidden` is removed from the Modules & lessons card (`src/app/admin/courses/[courseId]/page.tsx`). No inner row background touches the rounded corners, so nothing else changes visually. Verify: the menu extends past the card and Delete module is hit-testable.
+- **Blocker 2 (account price): resolved.** `memberPriceId` (`src/lib/plans/copy.ts`) returns a price only for single-price plans, the page uses it, and a test covers one, many and no prices.
+- **Suggestion (handle-only drag): done.** The grip handle is the only draggable element and the row is the drag image. `dragend` still bubbles to the row's handler, so state resets. Nested lists still stop propagation at the inner handle; ↑/↓ unchanged. Verify: dragging from the add-lesson input moved nothing; lesson, module and board drags saved.
+- No new findings in the delta. Still open as suggestions for a follow-up: remove the unused up/down swap path; add a DOM test setup for AC-30. Nit: editor page titles.
+
 ## Recommendation
-**Request changes.** Fix the two blockers (editor menus clipped; account price shown when it may not be the member's price) and, since it's cheap and in the same area, the draggable-row suggestion. Then re-run verify on the affected screens and review again.
+**Approve with suggestions** (after loop-back 1). First pass, kept for the record: **Request changes.** Fix the two blockers (editor menus clipped; account price shown when it may not be the member's price) and, since it's cheap and in the same area, the draggable-row suggestion. Then re-run verify on the affected screens and review again.
