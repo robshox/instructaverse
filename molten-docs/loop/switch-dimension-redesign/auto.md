@@ -35,6 +35,7 @@ Earlier in the terminal, Rob approved the Doop redesign ("You did a good job I h
 | 1 | mt-discovery | 01-discovery.md written; next mt-spec (no prototype: the risk is scope, not feasibility) | mt-spec |
 | 2 | mt-spec | 03-spec.md approved by auto: 10 FR groups, 34 ACs, no schema changes | mt-plan |
 | 3 | mt-plan | 04-plan.md approved by auto: 4 phases, 19 tasks; Linear parent SWI-244 with SWI-245–SWI-263 (blocked-by links set) | mt-build |
+| 4 | mt-build phase 1 | Checkpoint 1 passed: SWI-245–248 done (2df8ebf, e2235e6, 95a6a59, aaec560), 156 tests green | mt-build phase 2 |
 
 ## Decisions made for you
 | # | Step | Question | Chose | Why | Undo cost | By |
