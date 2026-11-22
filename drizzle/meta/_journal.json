@@ -15,6 +15,13 @@
       "when": 1795309748871,
       "tag": "0001_access_groups",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1795310048348,
+      "tag": "0002_plans",
+      "breakpoints": true
     }
   ]
 }
