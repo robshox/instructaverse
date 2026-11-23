@@ -154,3 +154,8 @@ export async function listEventsFor(viewer: Viewer, now = new Date()): Promise<{
     past: mine.filter((e) => eventEnd(e) <= now).reverse(),
   };
 }
+
+/** AC-12: the soonest upcoming (or in-progress) event this viewer can see. */
+export async function nextVisibleEvent(viewer: Viewer, now = new Date()): Promise<EventView | null> {
+  return (await listEventsFor(viewer, now)).upcoming[0] ?? null;
+}

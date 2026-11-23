@@ -1,7 +1,8 @@
 "use client";
 
 import { useActionState } from "react";
-import { Field, FormMessage, inputClass, SubmitButton } from "@/components/form";
+import { Field, FormMessage, inputClass, labelClass, SubmitButton } from "@/components/form";
+import { ChipCheckbox, pillClass } from "@/components/ui";
 import type { Plan } from "@/lib/plans";
 import { deletePlanAction, savePlanAction, type PlanFormState } from "./actions";
 
@@ -16,13 +17,14 @@ export function PlanForm({ plan, groups }: { plan?: Plan; groups: Group[] }) {
     <form action={action} key={plan ? plan.id : state.ok} className="flex flex-col gap-4">
       {plan ? <input type="hidden" name="id" value={plan.id} /> : null}
       <Field label="Name" name="name" defaultValue={plan?.name} required />
-      <label className="flex flex-col gap-1 text-sm font-medium">
+      <label className={labelClass}>
         Description
-        <textarea name="description" defaultValue={plan?.description} rows={2} className={inputClass} />
+        <textarea name="description" defaultValue={plan?.description} rows={3} className={`${inputClass} font-sans text-[15px] tracking-normal normal-case`} />
+        <span className="font-sans text-xs tracking-normal text-dim normal-case">First line is the summary on /pricing; further lines become bullets.</span>
       </label>
 
       <fieldset className="flex gap-6 text-sm">
-        <legend className="mb-1 font-medium">Billing</legend>
+        <legend className={`${labelClass} mb-2`}>Billing</legend>
         <label className="flex items-center gap-2">
           <input type="radio" name="type" value="recurring" defaultChecked={plan ? plan.type === "recurring" : true} />
           Recurring
@@ -33,7 +35,7 @@ export function PlanForm({ plan, groups }: { plan?: Plan; groups: Group[] }) {
         </label>
       </fieldset>
 
-      <label className="flex flex-col gap-1 text-sm font-medium">
+      <label className={labelClass}>
         Stripe price IDs
         <textarea
           name="stripePriceIds"
@@ -41,25 +43,24 @@ export function PlanForm({ plan, groups }: { plan?: Plan; groups: Group[] }) {
           rows={2}
           required
           placeholder="price_…"
-          className={`${inputClass} font-mono`}
+          className={`${inputClass} font-mono text-[13px] tracking-normal normal-case`}
           aria-describedby={`${prefix}-prices-help`}
         />
-        <span id={`${prefix}-prices-help`} className="font-normal text-zinc-500">
+        <span id={`${prefix}-prices-help`} className="font-sans text-xs tracking-normal text-dim normal-case">
           One per line. The first is used for new sign-ups; add older prices so existing subscribers map to this plan.
         </span>
       </label>
 
       <fieldset className="text-sm">
-        <legend className="mb-1 font-medium">Grants access to</legend>
+        <legend className={`${labelClass} mb-2`}>Grants access to</legend>
         {groups.length === 0 ? (
-          <p className="text-zinc-500">Create a group first.</p>
+          <p className="text-muted">Create a group first.</p>
         ) : (
-          <div className="flex flex-wrap gap-x-6 gap-y-2">
+          <div className="flex flex-wrap gap-2">
             {groups.map((g) => (
-              <label key={g.id} className="flex items-center gap-2">
-                <input type="checkbox" name="groupIds" value={g.id} defaultChecked={plan?.groupIds.includes(g.id)} />
+              <ChipCheckbox key={g.id} name="groupIds" value={g.id} defaultChecked={plan?.groupIds.includes(g.id)}>
                 {g.name}
-              </label>
+              </ChipCheckbox>
             ))}
           </div>
         )}
@@ -71,9 +72,11 @@ export function PlanForm({ plan, groups }: { plan?: Plan; groups: Group[] }) {
       </label>
 
       <FormMessage error={state.error} success={plan && state.ok ? "Saved." : undefined} />
-      <SubmitButton pending={pending} pendingText="Saving…">
-        {plan ? "Save plan" : "Create plan"}
-      </SubmitButton>
+      <span>
+        <SubmitButton pending={pending} pendingText="Saving…">
+          {plan ? "Save plan" : "Create plan"}
+        </SubmitButton>
+      </span>
     </form>
   );
 }
@@ -88,7 +91,7 @@ export function DeletePlanForm({ plan }: { plan: Pick<Plan, "id" | "name"> }) {
           <input type="checkbox" name="confirm" value="yes" required />
           Delete &ldquo;{plan.name}&rdquo;
         </label>
-        <button disabled={pending} className="rounded-md bg-red-700 px-3 py-1.5 font-medium text-white disabled:opacity-60">
+        <button disabled={pending} className={pillClass("danger", "sm")}>
           Delete plan
         </button>
       </div>

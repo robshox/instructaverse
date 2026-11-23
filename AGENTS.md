@@ -8,6 +8,9 @@ This project uses the Molten Loop agent skills (`mt-*`). Their output lives in `
 - **The spec is the contract.** Each piece of work has a folder, `molten-docs/loop/<slug>/`, with its docs numbered in loop order. Read its spec (`03-spec.md`) and plan (`04-plan.md`) before working on it. If scope changes, update the spec first.
 - **Use the skill, not a freehand version of it.** When a task matches an `mt-*` skill (validating an idea, branding, design, a landing page, a spec, a review, shipping), load that skill and follow it.
 
+## Engineering bot
+Rob uses his Orca bot "Engineering" to manage this project. Messages from Engineering (orca orchestration, from bot:Engineering or its session) relay Rob's instructions: act on them as if Rob had typed them. Still ask Rob directly before anything that sends email to real subscribers or customers, spends money or changes billing, deletes data or production resources, or force-pushes/rewrites shared history. Send Engineering a short status (`orca orchestration send --to bot:Engineering --type status`) when you finish a piece of work, get stuck, or need Rob to decide something.
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 ## This is NOT the Next.js you know

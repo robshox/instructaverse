@@ -1,4 +1,4 @@
-import { and, asc, eq, inArray, ne } from "drizzle-orm";
+import { and, asc, countDistinct, eq, inArray, ne } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
 import { planGroups, planPrices, plans, purchases } from "@/db/schema";
@@ -136,4 +136,18 @@ export async function getPlan(id: string): Promise<Plan | null> {
 export async function planForPrice(stripePriceId: string): Promise<Plan | null> {
   const [link] = await db.select().from(planPrices).where(eq(planPrices.stripePriceId, stripePriceId));
   return link ? getPlan(link.planId) : null;
+}
+
+/** AC-31: show or hide a plan on the pricing page. Admin-only through its action. */
+export async function setPlanListed(id: string, listed: boolean): Promise<void> {
+  await db.update(plans).set({ listed }).where(eq(plans.id, id));
+}
+
+/** Distinct buyers per plan (admin plan cards). */
+export async function planBuyerCounts(): Promise<Map<string, number>> {
+  const rows = await db
+    .select({ planId: purchases.planId, n: countDistinct(purchases.userId) })
+    .from(purchases)
+    .groupBy(purchases.planId);
+  return new Map(rows.map((r) => [r.planId, r.n]));
 }

@@ -2,6 +2,8 @@
 
 import { useOptimistic, useTransition } from "react";
 import { toggleLessonComplete } from "@/app/(member)/courses/actions";
+import { Icon } from "@/components/icon";
+import { pillClass } from "@/components/ui";
 
 /** Mark a lesson complete / not complete (AC-20). */
 export function CompleteButton({ lessonId, complete }: { lessonId: string; complete: boolean }) {
@@ -19,13 +21,10 @@ export function CompleteButton({ lessonId, complete }: { lessonId: string; compl
           await toggleLessonComplete(lessonId, !optimistic);
         })
       }
-      className={`self-start rounded-md px-4 py-2 text-sm font-medium ${
-        optimistic
-          ? "bg-green-700 text-white"
-          : "border border-zinc-300 dark:border-zinc-700"
-      }`}
+      className={pillClass(optimistic ? "success" : "secondary")}
     >
-      {optimistic ? "✓ Completed" : "Mark as complete"}
+      <Icon name={optimistic ? "check" : "circle-check"} size={16} />
+      {optimistic ? "Completed" : "Mark as complete"}
     </button>
   );
 }

@@ -3,60 +3,79 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { db } from "@/db";
 import { lessons } from "@/db/schema";
-import { Field, inputClass } from "@/components/form";
+import { Field, inputClass, labelClass } from "@/components/form";
+import { Icon } from "@/components/icon";
+import { Card, Eyebrow, pillClass } from "@/components/ui";
+import { VideoStatusTag } from "@/components/video-status";
+import { getCourseOutline } from "@/lib/courses";
+import { videoStatus } from "@/lib/courses/admin-summary";
+import { lessonPosition } from "@/lib/courses/lesson-view";
 import { requireAdmin } from "@/lib/session";
 import { attachAssetAction, saveLessonAction, startUploadAction } from "../../../actions";
 import { EditorForm, VideoUpload } from "../../../forms";
+import { MarkdownField, TranscriptField } from "./fields";
 
-const videoStatus: Record<string, string> = {
+const statusHelp: Record<string, string> = {
   preparing: "Processing in Mux…",
-  ready: "Ready",
   errored: "Mux couldn't process this video. Try uploading it again.",
 };
 
+/** Lesson editor (FR-9.4, AC-30). */
 export default async function LessonEditorPage({ params }: PageProps<"/admin/courses/[courseId]/lessons/[lessonId]">) {
   await requireAdmin();
   const { courseId, lessonId } = await params;
-  const [lesson] = await db.select().from(lessons).where(eq(lessons.id, lessonId));
+  const [[lesson], outline] = await Promise.all([db.select().from(lessons).where(eq(lessons.id, lessonId)), getCourseOutline(courseId)]);
   if (!lesson) notFound();
+  const position = outline ? lessonPosition(outline, lesson.id) : null;
 
   return (
-    <main className="flex max-w-2xl flex-col gap-10">
-      <div className="flex items-baseline justify-between">
-        <Link href={`/admin/courses/${courseId}`} className="text-sm underline-offset-4 hover:underline">
-          ← Course
+    <main className="flex flex-col gap-6">
+      <div>
+        <Link href={`/admin/courses/${courseId}`} className="font-mono text-xs uppercase tracking-[.04em] text-muted hover:text-fg">
+          <span className="text-accent">←</span> {outline?.course.title ?? "Course"}
+          {position ? ` · Module ${String(position.moduleNumber).padStart(2, "0")}` : ""}
         </Link>
-        <Link href={`/courses/${courseId}/${lesson.id}`} className="text-sm underline">
-          View as member
-        </Link>
+        <div className="mt-2.5 flex flex-wrap items-end justify-between gap-4">
+          <h1 className="text-[30px] leading-[1.15] font-medium tracking-[-.035em]">{lesson.title}</h1>
+          <Link href={`/courses/${courseId}/${lesson.id}`} className={pillClass("secondary")}>
+            <Icon name="eye" size={15} /> View as member
+          </Link>
+        </div>
       </div>
 
-      <EditorForm action={saveLessonAction} submit="Save lesson">
-        <input type="hidden" name="id" value={lesson.id} />
-        <Field label="Title" name="title" defaultValue={lesson.title} required />
-        <label className="flex flex-col gap-1 text-sm font-medium">
-          Lesson text (Markdown)
-          <textarea name="bodyMd" defaultValue={lesson.bodyMd} rows={8} className={inputClass} />
-        </label>
-        <label className="flex flex-col gap-1 text-sm font-medium">
-          Transcript
-          <textarea name="transcript" defaultValue={lesson.transcript ?? ""} rows={6} className={`${inputClass} font-mono text-xs`} />
-          <span className="font-normal text-zinc-500">Plain text, or WebVTT (starting with WEBVTT) to also show it as captions.</span>
-        </label>
-      </EditorForm>
-
-      <section className="flex flex-col gap-4">
-        <h2 className="text-lg font-semibold">Video</h2>
-        <p className="text-sm">
-          Status: <span className="font-medium">{lesson.muxStatus ? videoStatus[lesson.muxStatus] ?? lesson.muxStatus : "No video"}</span>
-          {lesson.muxAssetId ? <span className="text-zinc-500"> · asset {lesson.muxAssetId}</span> : null}
-        </p>
-        <VideoUpload lessonId={lesson.id} start={startUploadAction} />
-        <EditorForm action={attachAssetAction} submit="Attach asset" className="flex items-end gap-2">
+      <div className="grid items-start gap-5 lg:grid-cols-[1fr_300px]">
+        <EditorForm action={saveLessonAction} submit="Save lesson" className="flex min-w-0 flex-col gap-5">
           <input type="hidden" name="id" value={lesson.id} />
-          <Field label="…or use an existing Mux asset ID" name="assetId" />
+          <Card className="p-5">
+            <Field label="Title" name="title" defaultValue={lesson.title} required />
+          </Card>
+          <MarkdownField name="bodyMd" defaultValue={lesson.bodyMd} />
+          <TranscriptField name="transcript" defaultValue={lesson.transcript ?? ""} />
         </EditorForm>
-      </section>
+
+        <aside className="flex flex-col gap-3.5 rounded-md border border-line bg-surface p-[18px]">
+          <div className="flex items-center justify-between">
+            <Eyebrow accent="Video" />
+            <span className="font-mono text-[11px] text-dim">MUX</span>
+          </div>
+          <VideoUpload lessonId={lesson.id} start={startUploadAction} />
+          <div className="flex items-center justify-between font-mono text-xs text-muted">
+            <span>Status</span>
+            <VideoStatusTag status={videoStatus(lesson.muxStatus)} />
+          </div>
+          {lesson.muxStatus && statusHelp[lesson.muxStatus] ? <p className="text-xs text-muted">{statusHelp[lesson.muxStatus]}</p> : null}
+          {lesson.muxAssetId ? <p className="font-mono text-[11px] break-all text-dim">asset {lesson.muxAssetId}</p> : null}
+          <div className="h-px bg-line" />
+          <EditorForm action={attachAssetAction} submit="Attach asset" size="sm" className="flex flex-col items-start gap-2.5">
+            <input type="hidden" name="id" value={lesson.id} />
+            <label className={`${labelClass} w-full`}>
+              Or use an existing Mux asset
+              <input name="assetId" placeholder="asset id" className={`${inputClass} font-mono text-[13px] tracking-normal normal-case`} />
+            </label>
+          </EditorForm>
+          <p className="font-mono text-[11px] text-dim">Assets must use signed playback.</p>
+        </aside>
+      </div>
     </main>
   );
 }

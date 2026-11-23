@@ -1,22 +1,48 @@
-import type { ComponentProps } from "react";
+import type { ComponentProps, ReactNode } from "react";
 
 export const inputClass =
-  "w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-zinc-900 focus:outline-2 focus:outline-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100";
+  "w-full rounded-md border border-line-strong bg-raised px-3 py-2.5 text-fg placeholder:text-dim focus:border-accent focus:outline-none";
+
+export const labelClass = "flex flex-col gap-1.5 font-mono text-[11px] uppercase tracking-[.06em] text-muted";
 
 export function Field({ label, ...input }: { label: string } & ComponentProps<"input">) {
   return (
-    <label className="flex flex-col gap-1 text-sm font-medium">
+    <label className={labelClass}>
       {label}
-      <input className={inputClass} {...input} />
+      <input className={`${inputClass} font-sans text-[15px] tracking-normal normal-case`} {...input} />
     </label>
   );
 }
 
-export function SubmitButton({ pending, children, pendingText }: { pending: boolean; children: string; pendingText: string }) {
+/** The pill-shaped email field with a `>` prompt and an inline button (FR-8.3). */
+export function PromptField({ label, button, ...input }: { label: string; button: ReactNode } & ComponentProps<"input">) {
+  return (
+    <div className="flex flex-wrap items-center gap-2.5 rounded-[28px] border border-line-strong bg-raised py-1.5 pr-1.5 pl-[18px] focus-within:border-accent sm:flex-nowrap sm:rounded-full">
+      <span aria-hidden className="font-mono text-accent">
+        &gt;
+      </span>
+      <label className="sr-only" htmlFor={input.id ?? `prompt-${input.name}`}>
+        {label}
+      </label>
+      <input
+        id={input.id ?? `prompt-${input.name}`}
+        className="min-w-0 flex-1 bg-transparent py-1.5 font-mono text-sm text-fg outline-none placeholder:text-dim"
+        {...input}
+      />
+      {button}
+    </div>
+  );
+}
+
+export function SubmitButton({ pending, children, pendingText, size = "md" }: { pending: boolean; children: string; pendingText: string; size?: "md" | "sm" }) {
   return (
     <button
       disabled={pending}
-      className="rounded-md bg-zinc-900 px-4 py-2 font-medium text-white disabled:opacity-60 dark:bg-zinc-100 dark:text-zinc-900"
+      className={`inline-flex items-center justify-center gap-2 rounded-full font-medium whitespace-nowrap transition-colors disabled:opacity-60 ${
+        size === "sm"
+          ? "border border-line-strong px-3.5 py-1.5 text-[13px] text-fg hover:border-muted"
+          : "bg-accent px-[18px] py-[9px] text-sm text-on-accent hover:bg-accent-hover"
+      }`}
     >
       {pending ? pendingText : children}
     </button>
@@ -25,7 +51,7 @@ export function SubmitButton({ pending, children, pendingText }: { pending: bool
 
 export function FormMessage({ error, success }: { error?: string; success?: string }) {
   return (
-    <p aria-live="polite" className={`min-h-5 text-sm ${error ? "text-red-600" : "text-green-700 dark:text-green-400"}`}>
+    <p aria-live="polite" className={`min-h-5 text-sm ${error ? "text-danger" : "text-ok"}`}>
       {error ?? success}
     </p>
   );

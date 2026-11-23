@@ -1,7 +1,7 @@
 "use server";
 
 import { refresh } from "next/cache";
-import { createPlan, deletePlan, PlanInputError, PlanInUseError, updatePlan, type PlanInput } from "@/lib/plans";
+import { createPlan, deletePlan, PlanInputError, PlanInUseError, setPlanListed, updatePlan, type PlanInput } from "@/lib/plans";
 import { requireAdmin } from "@/lib/session";
 
 export type PlanFormState = { error?: string; ok?: number };
@@ -44,4 +44,13 @@ export async function deletePlanAction(_prev: PlanFormState, formData: FormData)
   }
   refresh();
   return { ok: Date.now() };
+}
+
+/** AC-31: the listed toggle saves immediately. */
+export async function setPlanListedAction(id: string, listed: boolean): Promise<{ error?: string }> {
+  await requireAdmin();
+  if (typeof id !== "string" || typeof listed !== "boolean") return { error: "Invalid request" };
+  await setPlanListed(id, listed);
+  refresh();
+  return {};
 }

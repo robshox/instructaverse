@@ -8,7 +8,7 @@ export const metadata = { title: "Board" };
 /** Opens the first board the member can see. */
 export default function BoardIndex() {
   return (
-    <Suspense fallback={<p className="text-sm text-zinc-500">Loading…</p>}>
+    <Suspense fallback={<p className="text-sm text-muted">Loading…</p>}>
       <FirstBoard />
     </Suspense>
   );
@@ -19,5 +19,5 @@ async function FirstBoard() {
   if (!viewer) redirect("/login");
   const [first] = await listBoardsFor(viewer);
   if (first) redirect(`/board/${first.id}`);
-  return <p className="text-zinc-600 dark:text-zinc-400">There&rsquo;s no board for you yet.</p>;
+  return <p className="text-muted">There&rsquo;s no board for you yet.</p>;
 }
